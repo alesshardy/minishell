@@ -6,11 +6,39 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/03/19 17:24:47 by apintus          ###   ########.fr       */
+/*   Updated: 2024/03/21 15:51:01 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+
+char *delete_exces_space(char *str)
+{
+	char	*new_str;
+	size_t	i;
+	size_t	j;
+
+	i = 0;
+	j = 0;
+	new_str = malloc(ft_strlen(str) + 1);
+	if (new_str == NULL)
+		return (NULL);
+	while (str[i] != '\0')
+	{
+		if (str[i] == ' ')
+		{
+			new_str[j] = str[i];
+			j++;
+			while (str[i] == ' ')
+				i++;
+		}
+		new_str[j] = str[i];
+		i++;
+		j++;
+	}
+	new_str[j] = '\0';
+	return (new_str);
+}
 
 char	*prompt()
 {
@@ -39,11 +67,15 @@ int	main(int ac, char **av, char **env)
 
 	(void)ac;
 	(void)av;
+	(void)env;
 	data = initialize_data();
 	while (1)
 	{
 		data->prompt = prompt();
 		printf("prompt : %s\n", data->prompt);
+		data->prompt = delete_exces_space(data->prompt);
+		printf("prompt : %s\n", data->prompt);
+		check_input(data->prompt);
 		if (ft_strncmp(data->prompt, "exit", 4) == 0)
 		{
 			free(data->prompt);

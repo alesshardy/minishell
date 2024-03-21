@@ -6,7 +6,7 @@
 #    By: apintus <apintus@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 12:43:39 by apintus           #+#    #+#              #
-#    Updated: 2024/03/19 16:04:47 by apintus          ###   ########.fr        #
+#    Updated: 2024/03/21 15:32:18 by apintus          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,6 +26,7 @@ BONUS_NAME = pipex_bonus
 ## SOURCES
 
 SRCS = srcs/main.c\
+		srcs/check_input.c\
 
 OBJS = $(SRCS:.c=.o)
 

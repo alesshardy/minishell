@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/03/19 17:24:20 by apintus          ###   ########.fr       */
+/*   Updated: 2024/03/21 16:33:39 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,18 +21,21 @@
 
 typedef enum token_type
 {
-	ARGUMENT,
-	COMMAND,
-	REDIR_IN,
-	REDIR_OUT,
-	REDIR_APPEND,
-	PIPE,
+	WORD,
+	PIPE, //|
+	REDIR_IN, //<
+	REDIR_OUT, //>
+	REDIR_APPEND, //>>
+	REDIR_HEREDOC, //<<
+	ENV_VAR //$
 }	t_token_type;
 
 typedef struct s_token
 {
 	char			*value;
 	t_token_type	type;
+	int				index;
+	struct s_token	*next;
 }	t_token;
 
 typedef struct s_data
@@ -43,6 +46,13 @@ typedef struct s_data
 	size_t	token_count;
 }	t_data;
 
+/*main.c*/
 char	*prompt(void);
+
+/*check_input.c*/
+int		check_input(char *line);
+int		unclosed_quotes(char *line);
+int		logical_operator(char *line);
+int		misplace_operator(char *line);
 
 #endif
