@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/03/21 15:51:01 by apintus          ###   ########.fr       */
+/*   Updated: 2024/03/22 12:02:29 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,11 @@ int	main(int ac, char **av, char **env)
 {
 	t_data	*data;
 
-	(void)ac;
+	if (ac != 1)
+	{
+		printf("Error: too many arguments\n");
+		return (1);
+	}
 	(void)av;
 	(void)env;
 	data = initialize_data();

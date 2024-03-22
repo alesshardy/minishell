@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/03/21 16:33:39 by apintus          ###   ########.fr       */
+/*   Updated: 2024/03/22 15:12:21 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,5 +54,6 @@ int		check_input(char *line);
 int		unclosed_quotes(char *line);
 int		logical_operator(char *line);
 int		misplace_operator(char *line);
+int		misplace_redirection(char *line);
 
 #endif
