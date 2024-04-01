@@ -6,7 +6,7 @@
 #    By: apintus <apintus@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 12:43:39 by apintus           #+#    #+#              #
-#    Updated: 2024/03/21 15:32:18 by apintus          ###   ########.fr        #
+#    Updated: 2024/03/29 14:42:58 by apintus          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,6 +27,8 @@ BONUS_NAME = pipex_bonus
 
 SRCS = srcs/main.c\
 		srcs/check_input.c\
+		srcs/token.c\
+		srcs/parser.c\
 
 OBJS = $(SRCS:.c=.o)
 
@@ -61,5 +63,7 @@ fclean : clean
 	$(RM) $(NAME)
 	$(RM) $(BONUS_NAME)
 	$(LIBFT_MAKE_COMMAND) fclean
+
+re : fclean all
 
 .PHONY : all clean fclean re
