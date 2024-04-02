@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/01 17:08:46 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/02 11:26:57 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,16 +155,15 @@ int	main(int ac, char **av, char **env)
 	{
 		//prompt
 		data->prompt = prompt();
-		printf("prompt : %s\n", data->prompt);
+		printf("prompt : %s\n", data->prompt); //visualiser le prompt
 		//tokenize
 		data->tokens = tokenizer(data->prompt);
-		//visualiser les tokens
-		display_tokens(data->tokens);
+		display_tokens(data->tokens); //visualiser les tokens
 		//parse
 		data->ast = parse_tokens(&data->tokens);
-		print_ast(data->ast, 0);
+		print_ast(data->ast, 0); //visualiser l'arbre
 		//exit temporaire
-		if (ft_strncmp(data->prompt, "exit", 4) == 0)
+		if (ft_strncmp(data->prompt, "exit", 4) == 0) //exit temporaire
 		{
 			free(data->prompt);
 			break ;

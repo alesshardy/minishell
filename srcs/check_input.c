@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 15:31:27 by apintus           #+#    #+#             */
-/*   Updated: 2024/03/22 16:03:13 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/02 13:59:59 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,8 @@ int	logical_operator(char *line)
 				return (1);
 			if (line[i] == '|' && line[i + 1] == '|')
 				return (1);
+			if (line[i] == ';')
+				return (1);
 		}
 		i++;
 	}
@@ -131,24 +133,12 @@ int	unclosed_quotes(char *line)
 int	check_input(char *line)
 {
 	if (unclosed_quotes(line) == 1)
-	{
-		ft_putstr_fd("Error: Unclosed quotes\n", 2);
-		return (1);
-	}
+		return(ft_putstr_fd("Error: Unclosed quotes\n", 2), 1);
 	if (logical_operator(line) == 1)
-	{
-		ft_putstr_fd("Error: Logical operators '&&' and '||' are not supported.\n", 2);
-		return (1);
-	}
+		return (ft_putstr_fd("Error: Logical operators '&&' and '||' and ';' are not supported.\n", 2), 1);
 	if (misplace_operator(line) == 1)
-	{
-		ft_putstr_fd("Error: Misplaced operator\n", 2);
-		return (1);
-	}
+		return (ft_putstr_fd("Error: Misplaced operator\n", 2), 1);
 	if (misplace_redirection(line) == 1)
-	{
-		ft_putstr_fd("Error: Misplaced redirection\n", 2);
-		return (1);
-	}
+		return (ft_putstr_fd("Error: Misplaced redirection\n", 2), 1);
 	return (0);
 }

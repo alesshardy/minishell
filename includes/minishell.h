@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/01 17:09:16 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/02 12:27:51 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,9 @@ typedef enum token_type
 	REDIR_OUT, //>
 	REDIR_APPEND, //>>
 	REDIR_HEREDOC, //<<
-	ENV_VAR //$
+	ENV_VAR, //$
+	CMD,
+	FILENAME
 }	t_token_type;
 
 typedef struct s_token

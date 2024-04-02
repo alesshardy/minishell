@@ -6,7 +6,7 @@
 #    By: apintus <apintus@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 12:43:39 by apintus           #+#    #+#              #
-#    Updated: 2024/03/29 14:42:58 by apintus          ###   ########.fr        #
+#    Updated: 2024/04/02 12:19:33 by apintus          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,6 +29,7 @@ SRCS = srcs/main.c\
 		srcs/check_input.c\
 		srcs/token.c\
 		srcs/parser.c\
+		srcs/execute.c\
 
 OBJS = $(SRCS:.c=.o)
 
