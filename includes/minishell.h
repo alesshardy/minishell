@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/02 12:27:51 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/05 17:09:31 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,9 @@ typedef enum token_type
 	REDIR_HEREDOC, //<<
 	ENV_VAR, //$
 	CMD,
-	FILENAME
+	ARG,
+	INFILE,
+	OUTFILE
 }	t_token_type;
 
 typedef struct s_token
@@ -39,6 +41,7 @@ typedef struct s_token
 	char			*value;
 	t_token_type	type;
 	struct s_token	*next;
+	struct s_token	*prev;
 }	t_token;
 
 typedef struct s_ast
@@ -72,10 +75,14 @@ int		misplace_redirection(char *line);
 /*token.c*/
 void	free_tokens(t_token *tokens);
 void	add_token(t_token **tokens, t_token *new_token);
-t_token	*create_token(char *value, t_token_type type);
+t_token	*new_token(char *value, t_token_type type);
 void	handle_redirection(char **input, t_token **tokens);
 void	handle_word(char **input, t_token **tokens);
 t_token	*tokenizer(char *input);
+
+void	redefine_word_token(t_token *tokens);
+void	redefine_cmd_token(t_token *tokens);
+
 
 /*parser.c*/
 t_ast	*create_ast(t_token *tokens);

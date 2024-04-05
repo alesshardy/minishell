@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 14:43:09 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/02 12:30:26 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/05 17:16:29 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,8 @@ t_ast	*parse_word(t_token **tokens)
 	t_ast	*node;
 
 	node = NULL;
-	if (*tokens != NULL && (*tokens)->type == WORD)
+	if (*tokens != NULL && ((*tokens)->type == WORD || (*tokens)->type == INFILE
+			|| (*tokens)->type == OUTFILE || (*tokens)->type == CMD || (*tokens)->type == ARG))
 	{
 		node = create_ast(*tokens);
 		*tokens = (*tokens)->next;
@@ -48,7 +49,8 @@ t_ast	*parse_command(t_token **tokens)
 
 	node = parse_word(tokens);
 	i = 1;
-	while (*tokens != NULL && (*tokens)->type == WORD)
+	while (*tokens != NULL &&  ((*tokens)->type == WORD || (*tokens)->type == INFILE
+				|| (*tokens)->type == OUTFILE || (*tokens)->type == CMD || (*tokens)->type == ARG))
 	{
 		node->args[i] = (*tokens)->value; // Add the word to the args array of the node
 		node->args[i + 1] = NULL; // Ensure the args array is NULL-terminated
@@ -101,7 +103,9 @@ t_ast	*parse_tokens(t_token **tokens)
 	return (parse_pipe(tokens));
 }
 
-void	free_ast(t_ast *ast)
+
+
+/* void	free_ast(t_ast *ast)
 {
 	if (ast == NULL)
 		return ;
@@ -109,4 +113,4 @@ void	free_ast(t_ast *ast)
 	free_ast(ast->right);
 	free(ast->args); // Free the args array
 	free(ast);
-}
+} */

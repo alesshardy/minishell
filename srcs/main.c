@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/02 11:26:57 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/05 17:18:32 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@
 
 const char	*get_token_type_name(t_token_type type)
 {
-	const char	*token_type_names[7];
+	const char	*token_type_names[11];
 
 	token_type_names[0] = "WORD";
 	token_type_names[1] = "PIPE";
@@ -51,7 +51,11 @@ const char	*get_token_type_name(t_token_type type)
 	token_type_names[4] = "REDIRECT_APPEND";
 	token_type_names[5] = "REDIRECT_HEREDOC";
 	token_type_names[6] = "TOKEN_ENV_VAR";
-	if (type >= 0 && type < 7)
+	token_type_names[7] = "CMD";
+	token_type_names[8] = "ARG";
+	token_type_names[9] = "INFILE";
+	token_type_names[10] = "OUTFILE";
+	if (type >= 0 && type < 11)
 		return (token_type_names[type]);
 	return ("UNKNOWN");
 }
@@ -80,7 +84,7 @@ void print_ast(t_ast *node, int depth)
     for (int i = 0; i < depth; i++)
         printf("  ");
 
-    // Print the type of the node
+ // Print the type of the node
     switch(node->type) {
         case WORD:
             printf("WORD: ");
@@ -103,6 +107,30 @@ void print_ast(t_ast *node, int depth)
         case REDIR_HEREDOC:
             printf("REDIR_HEREDOC: <<\n");
             break;
+		case CMD:
+			printf("CMD: ");
+			for (int i = 0; node->args[i] != NULL; i++)
+                printf("%s ", node->args[i]);
+            printf("\n");
+			break;
+		case ARG:
+			printf("ARG: ");
+			for (int i = 0; node->args[i] != NULL; i++)
+				printf("%s ", node->args[i]);
+			printf("\n");
+			break;
+		case INFILE:
+			printf("INFILE: ");
+			for (int i = 0; node->args[i] != NULL; i++)
+                printf("%s ", node->args[i]);
+            printf("\n");
+			break;
+		case OUTFILE:
+			printf("OUTFILE: ");
+			for (int i = 0; node->args[i] != NULL; i++)
+                printf("%s ", node->args[i]);
+            printf("\n");
+			break;
         default:
             printf("UNKNOWN TYPE\n");
             break;
@@ -158,6 +186,10 @@ int	main(int ac, char **av, char **env)
 		printf("prompt : %s\n", data->prompt); //visualiser le prompt
 		//tokenize
 		data->tokens = tokenizer(data->prompt);
+		display_tokens(data->tokens); //visualiser les tokens
+		redefine_word_token(data->tokens);
+		redefine_cmd_token(data->tokens);
+		printf("			REDEFINE\n");
 		display_tokens(data->tokens); //visualiser les tokens
 		//parse
 		data->ast = parse_tokens(&data->tokens);
