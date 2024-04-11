@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 16:15:43 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/05 17:19:15 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/11 18:50:19 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ t_token	*new_token(char *value, t_token_type type)
 // }
 
 
-/***************************************redifine_token*********************************************/
+/***************************************redefine_token*********************************************/
 
 void	redefine_word_token(t_token *tokens)
 {
@@ -93,6 +93,12 @@ void	redefine_word_token(t_token *tokens)
 				token->type = INFILE;
 			else if (token->prev && token->prev->type == REDIR_OUT)
 				token->type = OUTFILE;
+			else if (token->prev && token->prev->type == REDIR_APPEND)
+				token->type = OUTFILE;
+			else if (token->prev && token->prev->type == REDIR_HEREDOC)
+				token->type = LIMITER;
+			/*else if (token->prev && token->prev->type == ENV_VAR)
+				token->type = ARG;*/
 			else
 				token->type = CMD;
 		}
@@ -193,6 +199,98 @@ void	handle_word(char **input, t_token **tokens)
 	add_word_token(&start, input, tokens);
 }
 
+/*************************************HANDLE QUOTES********************************************************/
+
+//remove empty quote from tokens
+char	*remove_empty_quotes(char *word)
+{
+	int		length;
+	char	*new_word;
+	int		i;
+	int		j;
+	int		in_quotes;
+
+	i = 0;
+	j = 0;
+	in_quotes = 0;
+	length = ft_strlen(word);
+	new_word = malloc(length + 1);
+	while (i < length)
+	{
+		if ((word[i] == '\'' && word[i + 1] != '\'') || (word[i] == '\"' && word[i + 1] != '\"'))
+		{
+			if (in_quotes == word[i])
+				in_quotes = 0;
+			else if (!in_quotes)
+				in_quotes = word[i];
+		}
+		if ((word[i] == '\'' || word[i] == '\"') && i + 1 < length && word[i + 1] == word[i] && !in_quotes)
+			i += 2;
+		else
+			new_word[j++] = word[i++];
+	}
+	new_word[j] = '\0';
+	return (new_word);
+}
+
+void	remove_empty_quotes_from_tokens(t_token *tokens)
+{
+	t_token	*current;
+	char	*new_word;
+
+	current = tokens;
+	while (current != NULL)
+	{
+		new_word = remove_empty_quotes(current->value);
+		free(current->value);
+		current->value = new_word;
+		current = current->next;
+	}
+}
+//remove outer quotes from tokens
+char	*remove_outer_quotes(char *word)
+{
+	int		length;
+	char	*new_word;
+	int		i = 0;
+	int		j = 0;
+	char	in_quotes = 0;
+
+	length = ft_strlen(word);
+	new_word = malloc(length + 1);
+	while (i < length)
+	{
+		if ((word[i] == '\'' || word[i] == '\"') && !in_quotes)
+			in_quotes = word[i];
+		else if (word[i] == in_quotes)
+			in_quotes = 0;
+		else
+			new_word[j++] = word[i];
+		i++;
+	}
+	new_word[j] = '\0';
+	return (new_word);
+}
+
+void remove_outer_quotes_from_tokens(t_token *tokens)
+{
+	t_token	*current;
+	char	*new_word;
+
+	current = tokens;
+	while (current != NULL)
+	{
+		if (current->type == ARG)
+		{
+			new_word = remove_outer_quotes(current->value);
+			free(current->value);
+			current->value = new_word;
+		}
+		current = current->next;
+	}
+}
+
+//main tokenizer
 t_token	*tokenizer(char *input)
 {
 	t_token	*tokens;
@@ -211,5 +309,11 @@ t_token	*tokenizer(char *input)
 		else
 			handle_word(&input, &tokens);
 	}
+	display_tokens(tokens);
+	printf("			REDEFINE\n");
+	remove_empty_quotes_from_tokens(tokens);
+	redefine_word_token(tokens);
+	redefine_cmd_token(tokens);
+	remove_outer_quotes_from_tokens(tokens);
 	return (tokens);
 }

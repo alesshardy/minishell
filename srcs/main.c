@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/05 17:18:32 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/11 15:50:31 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,8 @@
 // 	new_str[j] = '\0';
 // 	return (new_str);
 // }
+
+/*******************************************VISUAL*************************************************/
 
 const char	*get_token_type_name(t_token_type type)
 {
@@ -145,11 +147,28 @@ void print_ast(t_ast *node, int depth)
         print_ast(node->right, depth + 1);
     }
 }
+/*********************************************MAIN****************************************************/
 
+char	*get_prompt(void)
+{
+	char	*pwd;
+	char	*tmp;
+	char	*prompt;
+
+	pwd = get_pwd();
+	if (!pwd)
+		return (ft_strdup(READLINE_MSG));
+	tmp = pwd;
+	prompt = ft_strjoin(pwd, READLINE_MSG);
+	free(pwd);
+	return (prompt);
+}
 char	*prompt()
 {
+	char	*prompt;
 	char	*line;
-	line = readline("minishell$> ");
+	prompt = get_prompt();
+	line = readline(prompt);
 	add_history(line);
 	return (line);
 }
@@ -177,8 +196,9 @@ int	main(int ac, char **av, char **env)
 		return (1);
 	}
 	(void)av;
-	(void)env;
+	signals_handler();
 	data = initialize_data();
+	init_shell_env(data, env);
 	while (1)
 	{
 		//prompt
@@ -187,13 +207,11 @@ int	main(int ac, char **av, char **env)
 		//tokenize
 		data->tokens = tokenizer(data->prompt);
 		display_tokens(data->tokens); //visualiser les tokens
-		redefine_word_token(data->tokens);
-		redefine_cmd_token(data->tokens);
-		printf("			REDEFINE\n");
-		display_tokens(data->tokens); //visualiser les tokens
 		//parse
 		data->ast = parse_tokens(&data->tokens);
 		print_ast(data->ast, 0); //visualiser l'arbre
+		//execute
+		executor(data, data->ast);
 		//exit temporaire
 		if (ft_strncmp(data->prompt, "exit", 4) == 0) //exit temporaire
 		{

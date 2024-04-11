@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 14:43:09 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/05 17:16:29 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/10 16:35:14 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,16 @@ t_ast	*create_ast(t_token *token)
 	node->left = NULL;
 	node->right = NULL;
 	return (node);
+}
+
+void	free_ast(t_ast *ast)
+{
+	if (ast == NULL)
+		return ;
+	free_ast(ast->left);
+	free_ast(ast->right);
+	free(ast->args); // Free the args array
+	free(ast);
 }
 
 t_ast	*parse_word(t_token **tokens)
@@ -60,7 +70,7 @@ t_ast	*parse_command(t_token **tokens)
 	return (node);
 }
 
-t_ast	*parse_redirection(t_token **tokens)
+/* t_ast	*parse_redirection(t_token **tokens)
 {
 	t_ast	*node;
 	t_ast	*redir;
@@ -77,7 +87,33 @@ t_ast	*parse_redirection(t_token **tokens)
 		node = redir;
 	}
 	return (node);
+} */
+
+t_ast	*parse_redirection(t_token **tokens)
+{
+    t_ast	*node;
+    t_ast	*redir;
+
+    node = parse_command(tokens);
+    while (*tokens != NULL && ((*tokens)->type == REDIR_IN
+            || (*tokens)->type == REDIR_OUT || (*tokens)->type == REDIR_APPEND
+            || (*tokens)->type == REDIR_HEREDOC))
+    {
+        redir = create_ast(*tokens);
+        redir->left = node;
+        *tokens = (*tokens)->next;
+        if (*tokens == NULL || ((*tokens)->type != INFILE && (*tokens)->type != OUTFILE))
+        {
+            fprintf(stderr, "Error: expected a filename after redirection\n");
+            free_ast(redir);
+            return (NULL);
+        }
+        redir->right = parse_command(tokens);
+        node = redir;
+    }
+    return (node);
 }
+
 
 t_ast	*parse_pipe(t_token **tokens)
 {
@@ -103,14 +139,3 @@ t_ast	*parse_tokens(t_token **tokens)
 	return (parse_pipe(tokens));
 }
 
-
-
-/* void	free_ast(t_ast *ast)
-{
-	if (ast == NULL)
-		return ;
-	free_ast(ast->left);
-	free_ast(ast->right);
-	free(ast->args); // Free the args array
-	free(ast);
-} */
