@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 16:15:43 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/11 18:50:19 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/12 12:56:08 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,7 +202,7 @@ void	handle_word(char **input, t_token **tokens)
 /*************************************HANDLE QUOTES********************************************************/
 
 //remove empty quote from tokens
-char	*remove_empty_quotes(char *word)
+/* char	*remove_empty_quotes(char *word)
 {
 	int		length;
 	char	*new_word;
@@ -246,7 +246,7 @@ void	remove_empty_quotes_from_tokens(t_token *tokens)
 		current->value = new_word;
 		current = current->next;
 	}
-}
+} */
 //remove outer quotes from tokens
 char	*remove_outer_quotes(char *word)
 {
@@ -258,6 +258,8 @@ char	*remove_outer_quotes(char *word)
 
 	length = ft_strlen(word);
 	new_word = malloc(length + 1);
+	if (new_word == NULL)
+		return (NULL);
 	while (i < length)
 	{
 		if ((word[i] == '\'' || word[i] == '\"') && !in_quotes)
@@ -280,7 +282,7 @@ void remove_outer_quotes_from_tokens(t_token *tokens)
 	current = tokens;
 	while (current != NULL)
 	{
-		if (current->type == ARG)
+		if (current->type == ARG || current->type == OUTFILE || current->type == INFILE)
 		{
 			new_word = remove_outer_quotes(current->value);
 			free(current->value);
@@ -311,7 +313,7 @@ t_token	*tokenizer(char *input)
 	}
 	display_tokens(tokens);
 	printf("			REDEFINE\n");
-	remove_empty_quotes_from_tokens(tokens);
+	//remove_empty_quotes_from_tokens(tokens); // inuliser pour le moment wtf
 	redefine_word_token(tokens);
 	redefine_cmd_token(tokens);
 	remove_outer_quotes_from_tokens(tokens);
