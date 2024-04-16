@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/11 15:53:33 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/16 16:54:31 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,11 @@ typedef struct s_data
 	char	*prompt;
 	t_token	*tokens;
 	t_ast	*ast;
+	t_ast	*first_redir_out;
 	size_t	token_count;
+	int		count_redir_in;
+	int		count_redir_out;
+	int		exit_status;
 }	t_data;
 
 /*main.c*/
@@ -135,6 +139,10 @@ void	ft_exec(t_data *data, char **args);
 void	ft_pipe(t_data *data, t_ast *ast);
 void	ft_redir_out(t_data *data, t_ast *ast);
 void	executor(t_data *data, t_ast *ast);
+
+void	count_redirection(t_data *data, t_ast **ast);
+void	reset_count_redirection(t_data *data);
+void	handle_multi_redir(t_data *data, t_ast *ast);
 
 /*builtins.c*/
 int		ft_echo(char **args);

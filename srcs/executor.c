@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/12 17:27:25 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/16 16:46:30 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,6 +187,44 @@ void	ft_redir_out(t_data *data, t_ast *ast)
 	close(saved_stdout);
 }
 
+// V2
+//void	ft_redir_out(t_data *data, t_ast *ast)
+// {
+//     int		fd;
+//     int		saved_stdout;
+//     t_ast	*current;
+
+//     saved_stdout = dup(STDOUT_FILENO);  // Sauvegarder la sortie standard
+
+//     current = ast;
+//     while (current != NULL && (current->type == REDIR_OUT || current->type == REDIR_APPEND))
+//     {
+//         current->left->args[0] = remove_quotes_file(current->left->args[0]); // remove quotes from file name
+//         if (current->type == REDIR_OUT)
+//             fd = open(current->left->args[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+//         else
+//             fd = open(current->left->args[0], O_WRONLY | O_CREAT | O_APPEND, 0644);
+//         if (fd < 0)
+//         {
+//             ft_putstr_fd("minishell: ", 2);
+//             ft_putstr_fd(current->args[0], 2);
+//             ft_putstr_fd(": ", 2);
+//             ft_putstr_fd(strerror(errno), 2);
+//             ft_putstr_fd("\n", 2);
+//             return;
+//         }
+//         dup2(fd, STDOUT_FILENO);
+//         close(fd);
+//         current = current->right;
+//     }
+
+//     if (current != NULL && current->type == CMD)
+//         executor(data, current);
+
+//     dup2(saved_stdout, STDOUT_FILENO);  // Restaurer la sortie standard
+//     close(saved_stdout);
+// }
+
 void	ft_redir_in(t_data *data, t_ast *ast)
 {
 	int		fd;
@@ -216,6 +254,20 @@ void	ft_redir_in(t_data *data, t_ast *ast)
 
 // fonction qui gere les actions a effectuer en fonction du type de token
 
+void	handle_redirections(t_data *data, t_ast *ast)
+{
+	if (ast->type == REDIR_OUT || ast->type == REDIR_APPEND)
+	{
+		ft_redir_out(data, ast);
+	}
+	else if (ast->type == REDIR_IN)
+	{
+		ft_redir_in(data, ast);
+	}
+	else
+		executor(data, ast);
+}
+
 void	executor(t_data *data, t_ast *ast)
 {
     if (ast == NULL) {
@@ -241,14 +293,16 @@ void	executor(t_data *data, t_ast *ast)
 	}
 	else if (ast->type == PIPE)
 		ft_pipe(data, ast);
-	else if (ast->type == REDIR_OUT || ast->type == REDIR_APPEND)
-		ft_redir_out(data, ast);
-	else if (ast->type == REDIR_IN)
-		ft_redir_in(data, ast);
+	// else if (ast->type == REDIR_OUT || ast->type == REDIR_APPEND)
+	// 	ft_redir_out(data, ast);
+	// else if (ast->type == REDIR_IN)
+	// 	ft_redir_in(data, ast);
 	else
-	{
-		printf("Error: unknown ast type\n");
-		return;
-	}
+		handle_redirections(data, ast);
+	// else
+	// {
+	// 	printf("Error: unknown ast type\n");
+	// 	return;
+	// }
 }
 

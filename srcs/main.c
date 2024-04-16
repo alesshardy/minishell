@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/11 15:50:31 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/16 17:27:02 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,6 +182,8 @@ t_data	*initialize_data()
 		data->prompt = NULL;
 		data->tokens = NULL;
 		data->token_count = 0;
+		data->count_redir_in = 0;
+		data->count_redir_out = 0;
 	}
 	return data;
 }
@@ -211,7 +213,17 @@ int	main(int ac, char **av, char **env)
 		data->ast = parse_tokens(&data->tokens);
 		print_ast(data->ast, 0); //visualiser l'arbre
 		//execute
-		executor(data, data->ast);
+		count_redirection(data, &data->ast);
+		printf("redir_in : %d\n", data->count_redir_in);
+		printf("redir_out : %d\n", data->count_redir_out);
+		if (data->count_redir_in > 1 || data->count_redir_out > 1)
+		{
+			//printf("first_redir_out : %s\n", data->first_redir_out->right->args[0]); //fou la merde
+			handle_multi_redir(data, data->ast);
+			executor(data, data->ast);
+		}
+		else
+			executor(data, data->ast);
 		//exit temporaire
 		if (ft_strncmp(data->prompt, "exit", 4) == 0) //exit temporaire
 		{
@@ -219,7 +231,58 @@ int	main(int ac, char **av, char **env)
 			break ;
 		}
 		free(data->prompt);
+		reset_count_redirection(data);
 	}
 	free(data);
 	return (0);
 }
+
+//MAIN DEBUG
+/* int	main(int ac, char **av, char **env)
+{
+	t_data	*data;
+
+	if (ac != 1)
+	{
+		printf("Error: too many arguments\n");
+		return (1);
+	}
+	(void)av;
+	signals_handler();
+	data = initialize_data();
+	init_shell_env(data, env);
+	while (1)
+	{
+		//prompt
+		data->prompt = "cat A < B < C";
+		printf("prompt : %s\n", data->prompt); //visualiser le prompt
+		//tokenize
+		data->tokens = tokenizer(data->prompt);
+		display_tokens(data->tokens); //visualiser les tokens
+		//parse
+		data->ast = parse_tokens(&data->tokens);
+		print_ast(data->ast, 0); //visualiser l'arbre
+		//execute
+		count_redirection(data, &data->ast);
+		printf("redir_in : %d\n", data->count_redir_in);
+		printf("redir_out : %d\n", data->count_redir_out);
+		if (data->count_redir_in > 1 || data->count_redir_out > 1)
+		{
+			//printf("first_redir_out : %s\n", data->first_redir_out->right->args[0]);
+			handle_multi_redir(data, data->ast);
+			executor(data, data->ast);
+		}
+		else
+			executor(data, data->ast);
+		//exit temporaire
+		if (ft_strncmp(data->prompt, "exit", 4) == 0) //exit temporaire
+		{
+			free(data->prompt);
+			break ;
+		}
+		free(data->prompt);
+		reset_count_redirection(data);
+	}
+	free(data);
+	return (0);
+} */

@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 14:43:09 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/10 16:35:14 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/16 17:28:25 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ t_ast	*parse_command(t_token **tokens)
 	}
 	return (node);
 }
-
+//je sais plus quel version mais garder pour l instant
 /* t_ast	*parse_redirection(t_token **tokens)
 {
 	t_ast	*node;
@@ -88,19 +88,46 @@ t_ast	*parse_command(t_token **tokens)
 	}
 	return (node);
 } */
+//V1
+// t_ast	*parse_redirection(t_token **tokens)    // This is the original function astV1
+// {
+//     t_ast	*node;
+//     t_ast	*redir;
 
+//     node = parse_command(tokens);
+//     while (*tokens != NULL && ((*tokens)->type == REDIR_IN
+//             || (*tokens)->type == REDIR_OUT || (*tokens)->type == REDIR_APPEND
+//             || (*tokens)->type == REDIR_HEREDOC))
+//     {
+//         redir = create_ast(*tokens);
+//         redir->left = node;
+//         *tokens = (*tokens)->next;
+//         if (*tokens == NULL || ((*tokens)->type != INFILE && (*tokens)->type != OUTFILE))
+//         {
+//             fprintf(stderr, "Error: expected a filename after redirection\n");
+//             free_ast(redir);
+//             return (NULL);
+//         }
+//         redir->right = parse_command(tokens);
+//         node = redir;
+//     }
+//     return (node);
+// }
+
+//VC LA BONNE JE CROIS
 t_ast	*parse_redirection(t_token **tokens)
 {
     t_ast	*node;
     t_ast	*redir;
+    t_ast	*last_redir;
 
     node = parse_command(tokens);
+    last_redir = NULL;
     while (*tokens != NULL && ((*tokens)->type == REDIR_IN
             || (*tokens)->type == REDIR_OUT || (*tokens)->type == REDIR_APPEND
             || (*tokens)->type == REDIR_HEREDOC))
     {
         redir = create_ast(*tokens);
-        redir->left = node;
         *tokens = (*tokens)->next;
         if (*tokens == NULL || ((*tokens)->type != INFILE && (*tokens)->type != OUTFILE))
         {
@@ -109,10 +136,57 @@ t_ast	*parse_redirection(t_token **tokens)
             return (NULL);
         }
         redir->right = parse_command(tokens);
-        node = redir;
+        if (last_redir == NULL)
+        {
+            redir->left = node;
+            node = redir;
+        }
+        else
+        {
+            redir->left = last_redir->left;
+            last_redir->left = redir;
+        }
+        last_redir = redir;
     }
     return (node);
 }
+
+//astV2 redir_out on  the left
+/* t_ast	*parse_redirection(t_token **tokens)
+{
+    t_ast	*node;
+    t_ast	*redir;
+    t_ast	*last_redir;
+
+    node = parse_command(tokens);
+    last_redir = NULL;
+    while (*tokens != NULL && ((*tokens)->type == REDIR_IN
+            || (*tokens)->type == REDIR_OUT || (*tokens)->type == REDIR_APPEND
+            || (*tokens)->type == REDIR_HEREDOC))
+    {
+        redir = create_ast(*tokens);
+        *tokens = (*tokens)->next;
+        if (*tokens == NULL || ((*tokens)->type != INFILE && (*tokens)->type != OUTFILE))
+        {
+            fprintf(stderr, "Error: expected a filename after redirection\n");
+            free_ast(redir);
+            return (NULL);
+        }
+        redir->left = parse_command(tokens);
+        if (last_redir == NULL)
+        {
+            redir->right = node;
+            node = redir;
+        }
+        else
+        {
+            redir->right = last_redir->right;
+            last_redir->right = redir;
+        }
+        last_redir = redir;
+    }
+    return (node);
+} */
 
 
 t_ast	*parse_pipe(t_token **tokens)
