@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/16 16:54:31 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/19 16:31:30 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 # include <sys/wait.h>
 
 # define MAX_ARGS 1024
+# define HERE_DOC_FILE "/tmp/.here_doc"
 
 // Colors
 # define RED "\033[0;31m"
@@ -90,6 +91,7 @@ typedef struct s_data
 	int		count_redir_in;
 	int		count_redir_out;
 	int		exit_status;
+	int		here_doc;
 }	t_data;
 
 /*main.c*/
@@ -168,5 +170,14 @@ void	ctrl_c_handler(int sig);
 /*display*/
 void	display_tokens(t_token *tokens);
 void	print_ast(t_ast *ast, int level);
+
+/*adjust_ast*/
+void	move_cmd(t_ast *node);
+void	adjust_ast(t_ast *node);
+
+/*here_doc*/
+void	handle_here_doc(t_data *data, t_token **tokens);
+char	*create_tmp_file(t_data *data, char *limiter);
+void	delete_tmp_files(void);
 
 #endif

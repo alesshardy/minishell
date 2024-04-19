@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/16 17:27:02 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/19 16:32:29 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@
 
 const char	*get_token_type_name(t_token_type type)
 {
-	const char	*token_type_names[11];
+	const char	*token_type_names[12];
 
 	token_type_names[0] = "WORD";
 	token_type_names[1] = "PIPE";
@@ -57,7 +57,8 @@ const char	*get_token_type_name(t_token_type type)
 	token_type_names[8] = "ARG";
 	token_type_names[9] = "INFILE";
 	token_type_names[10] = "OUTFILE";
-	if (type >= 0 && type < 11)
+	token_type_names[11] = "LIMITER";
+	if (type >= 0 && type < 12)
 		return (token_type_names[type]);
 	return ("UNKNOWN");
 }
@@ -133,6 +134,11 @@ void print_ast(t_ast *node, int depth)
                 printf("%s ", node->args[i]);
             printf("\n");
 			break;
+		case LIMITER:
+			printf("LIMITER: ");
+			for (int i = 0; node->args[i] != NULL; i++)
+				printf("%s ", node->args[i]);
+			printf("\n");
         default:
             printf("UNKNOWN TYPE\n");
             break;
@@ -209,13 +215,19 @@ int	main(int ac, char **av, char **env)
 		//tokenize
 		data->tokens = tokenizer(data->prompt);
 		display_tokens(data->tokens); //visualiser les tokens
+		//handle here_doc
+		handle_here_doc(data, &data->tokens);
 		//parse
 		data->ast = parse_tokens(&data->tokens);
+		print_ast(data->ast, 0); //visualiser l'arbre
+		//adjust
+		adjust_ast(data->ast);
 		print_ast(data->ast, 0); //visualiser l'arbre
 		//execute
 		count_redirection(data, &data->ast);
 		printf("redir_in : %d\n", data->count_redir_in);
 		printf("redir_out : %d\n", data->count_redir_out);
+		//a suprimer un jour pck ca sert a rien
 		if (data->count_redir_in > 1 || data->count_redir_out > 1)
 		{
 			//printf("first_redir_out : %s\n", data->first_redir_out->right->args[0]); //fou la merde
@@ -231,6 +243,7 @@ int	main(int ac, char **av, char **env)
 			break ;
 		}
 		free(data->prompt);
+		delete_tmp_files();
 		reset_count_redirection(data);
 	}
 	free(data);
@@ -254,13 +267,18 @@ int	main(int ac, char **av, char **env)
 	while (1)
 	{
 		//prompt
-		data->prompt = "cat A < B < C";
+		data->prompt = "< infile cat -e";
 		printf("prompt : %s\n", data->prompt); //visualiser le prompt
 		//tokenize
 		data->tokens = tokenizer(data->prompt);
 		display_tokens(data->tokens); //visualiser les tokens
+		//handle here_doc
+		handle_here_doc(data, &data->tokens);
 		//parse
 		data->ast = parse_tokens(&data->tokens);
+		print_ast(data->ast, 0); //visualiser l'arbre
+		//adjust
+		adjust_ast(data->ast);
 		print_ast(data->ast, 0); //visualiser l'arbre
 		//execute
 		count_redirection(data, &data->ast);

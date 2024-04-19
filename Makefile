@@ -6,7 +6,7 @@
 #    By: apintus <apintus@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 12:43:39 by apintus           #+#    #+#              #
-#    Updated: 2024/04/16 12:00:32 by apintus          ###   ########.fr        #
+#    Updated: 2024/04/17 16:20:34 by apintus          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,6 +34,8 @@ SRCS = srcs/main.c\
 		srcs/environment_init.c\
 		srcs/signals.c\
 		srcs/multi_redir.c\
+		srcs/here_doc.c\
+		srcs/adjust_ast.c\
 
 OBJS = $(SRCS:.c=.o)
 

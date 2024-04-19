@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/16 16:46:30 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/19 15:49:22 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -260,7 +260,7 @@ void	handle_redirections(t_data *data, t_ast *ast)
 	{
 		ft_redir_out(data, ast);
 	}
-	else if (ast->type == REDIR_IN)
+	else if (ast->type == REDIR_IN || ast->type == REDIR_HEREDOC)
 	{
 		ft_redir_in(data, ast);
 	}
