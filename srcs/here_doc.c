@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/17 11:36:41 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/19 16:31:17 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/22 12:14:56 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,8 @@ char	*create_tmp_file(t_data *data, char *limiter)
 	filename = find_tmp_filename();
 	if (filename == NULL)
 		return (NULL);
-	data->here_doc = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0644); // Ouvre le fichier temporaire
-	if (data->here_doc == -1)
+	data->here_doc_fd = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0644); // Ouvre le fichier temporaire
+	if (data->here_doc_fd == -1)
 	{
 		free(filename);
 		return (NULL);
@@ -74,11 +74,11 @@ char	*create_tmp_file(t_data *data, char *limiter)
 			free(line);
 			break ;
 		}
-		write(data->here_doc, line, len); // Écrit la ligne dans le fichier temporaire
-		write(data->here_doc, "\n", 1); // Écrit un retour à la ligne
+		write(data->here_doc_fd, line, len); // Écrit la ligne dans le fichier temporaire
+		write(data->here_doc_fd, "\n", 1); // Écrit un retour à la ligne
 		free(line);
 	}
-	close(data->here_doc); // Ferme le fichier temporaire
+	close(data->here_doc_fd); // Ferme le fichier temporaire
 	return (filename);
 }
 

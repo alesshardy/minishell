@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/19 15:49:22 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/22 18:17:40 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 /*********************************ADJUST FILE AND CMD********************************/
 
-int	is_white_space(char *str)
+/* int	is_white_space(char *str)
 {
 	int	i;
 
@@ -57,43 +57,89 @@ char	*check_cmd_quotes(char *str)
 		}
 		new_str[j] = '\0';
 	}
+	printf("new_str = %s\n", new_str); //fdebug
+	return (new_str);
+} */
+
+int	contains_white_space(char *str, int len)
+{
+	int i;
+
+	i = 0;
+	while (i < len)
+	{
+		if (str[i] == ' ' || str[i] == '\t' || str[i] == '\n')
+			return 1;
+		i++;
+	}
+	return (0);
+}
+
+char	*check_cmd_quotes(char *str)
+{
+	int		i;
+	int		j;
+	char	*new_str;
+
+	i = 0;
+	j = 0;
+	new_str = malloc(ft_strlen(str) + 1);
+	if (new_str == NULL)
+		return (NULL);
+	if ((str[0] == '\'' || str[0] == '\"') && str[ft_strlen(str) - 1] == str[0]
+			&& ft_strlen(str) != 2 && !contains_white_space(str + 1, ft_strlen(str) - 2))
+	{
+		while (str[++i] != str[0])
+		{
+			new_str[j++] = str[i];
+		}
+		new_str[j] = '\0';
+	}
+	else
+	{
+		while (str[i] != '\0')
+		{
+			new_str[j++] = str[i++];
+		}
+		new_str[j] = '\0';
+	}
+	printf("new_str = %s\n", new_str); //fdebug
 	return (new_str);
 }
 
 char	*remove_quotes_file(char *str)
 {
-    int		i;
-    int		j;
-    char	*new_str;
+	int		i;
+	int		j;
+	char	*new_str;
 
-    i = 0;
-    j = 0;
-    new_str = malloc(ft_strlen(str) + 1);
-    if (new_str == NULL)
-        return NULL;
-    if ((str[0] == '\'' || str[0] == '\"') && str[ft_strlen(str) - 1] == str[0])
-    {
-        while (str[++i] != str[0])
-        {
-            new_str[j++] = str[i];
-        }
-        new_str[j] = '\0';
-    }
-    else
-    {
-        while (str[i] != '\0')
-        {
-            new_str[j++] = str[i++];
-        }
-        new_str[j] = '\0';
-    }
-    free(str);
-    return new_str;
+	i = 0;
+	j = 0;
+	new_str = malloc(ft_strlen(str) + 1);
+	if (new_str == NULL)
+		return NULL;
+	if ((str[0] == '\'' || str[0] == '\"') && str[ft_strlen(str) - 1] == str[0])
+	{
+		while (str[++i] != str[0])
+		{
+			new_str[j++] = str[i];
+		}
+		new_str[j] = '\0';
+	}
+	else
+	{
+		while (str[i] != '\0')
+			new_str[j++] = str[i++];
+		new_str[j] = '\0';
+	}
+	free(str);
+	return new_str;
 }
 
 /*************************************EXEC*************************************/
 
-void	ft_exec(t_data *data, char **args)
+// ft_exec ancienne version
+/* void	ft_exec(t_data *data, char **args)
 {
 	pid_t	pid;
 	int		status;
@@ -107,7 +153,7 @@ void	ft_exec(t_data *data, char **args)
 		//printf("args[%d] = %s\n", i, args[i]); //fdebug
 		i++;
 	}
-	cmd = ft_strjoin(ft_strncmp(data->env[0], "PATH=", 5) == 0 ? data->env[0] + 5 : "/bin/", args[0]);
+	cmd = ft_strjoin(ft_strncmp(data->env[0], "PATH=", 5) == 0 ? data->env[0] + 5 : "/bin/", args[0]); // a changer
 	//printf("cmd = %s\n", cmd); //fdebug
 	pid = fork();
 	if (pid == 0)
@@ -118,6 +164,48 @@ void	ft_exec(t_data *data, char **args)
 			ft_putstr_fd(args[0], 2);
 			ft_putstr_fd(": ", 2);
 			ft_putstr_fd(strerror(errno), 2);
+			ft_putstr_fd("\n", 2);
+			exit(1);
+		}
+	}
+	else
+		waitpid(pid, &status, 0);
+
+} */
+
+void	ft_exec(t_data *data, char **args)
+{
+	pid_t	pid;
+	int		status;
+	char	*cmd;
+	char	**env_array;
+	int		i;
+
+	i = 0;
+	while(args[i])
+	{
+		//ft_putendl_fd(args[i], 2); //fdebug
+		args[i] = check_cmd_quotes(args[i]);
+		i++;
+	}
+
+	env_array = get_env_array(data->env);
+
+	cmd = get_cmd_path(env_array, args[0]);
+	//ft_putendl_fd("je suis dans ft_exec", 2);//fdebug
+	printf("cmd = %s\n", cmd);//fdebug
+	pid = fork();
+	if (pid == 0)
+	{
+		if (execve(cmd, args, env_array) == -1)
+		{
+			ft_putstr_fd("minishell:", 2);
+			ft_putstr_fd(args[0], 2);
+			ft_putstr_fd(": ", 2);
+			if (errno ==ENOENT)
+				ft_putstr_fd("command not found", 2);
+			else
+				ft_putstr_fd(strerror(errno), 2);
 			ft_putstr_fd("\n", 2);
 			exit(1);
 		}
@@ -288,6 +376,8 @@ void	executor(t_data *data, t_ast *ast)
 			return ;
 		else if (ft_strncmp(ast->args[0], "env", 3) == 0)
 			ft_env(data);
+		else if (ft_strncmp(ast->args[0], "exit", 4) == 0)
+			ft_exit(ast->args, data);
 		else
 			ft_exec(data, ast->args);
 	}

@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/19 16:32:29 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/22 16:48:54 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,7 +206,8 @@ int	main(int ac, char **av, char **env)
 	(void)av;
 	signals_handler();
 	data = initialize_data();
-	init_shell_env(data, env);
+	//init_shell_env(data, env); //ancien env
+	data->env = init_env(data, env);
 	while (1)
 	{
 		//prompt
@@ -236,12 +237,7 @@ int	main(int ac, char **av, char **env)
 		}
 		else
 			executor(data, data->ast);
-		//exit temporaire
-		if (ft_strncmp(data->prompt, "exit", 4) == 0) //exit temporaire
-		{
-			free(data->prompt);
-			break ;
-		}
+			
 		free(data->prompt);
 		delete_tmp_files();
 		reset_count_redirection(data);

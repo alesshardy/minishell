@@ -6,14 +6,16 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/26 12:23:36 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/10 13:15:59 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/22 18:14:48 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
+/***********************************ANCIEN ENV TABLEAU ** ***************************/
+
 // fonction dup_env :
-char	**dup_env(char **env)
+/* char	**dup_env(char **env)
 {
 	char	**new_env;
 	int		i;
@@ -115,4 +117,98 @@ void	init_shell_env(t_data *data, char **env)
 		data->parsed_env[i + 1] = NULL;
 	}
 
+} */
+
+/*************************************ENV LISTE CHAINEE*******************************/
+
+
+t_env	*get_env_var(t_data *data, char *var)
+{
+	t_env	*env;
+	int i = 0;
+
+	env = data->env;
+	while (env)
+	{
+		i++;
+		if (ft_strcmp(env->name, var) == 0)
+			return (env);
+		env = env->next;
+	}
+	//dprintf(2, "%d\n", i);//fdebug
+	return (NULL);
+}
+
+char	*get_var_value(t_data *data, char *var)
+{
+	t_env	*env;
+
+	env = get_env_var(data, var);
+	if (env)
+		return (env->value);
+	return (NULL);
+}
+
+t_env	*new_env_node(char *name, char *value, int equal_sign)
+{
+	t_env	*new_node;
+
+	new_node = malloc(sizeof(t_env));
+	if (!new_node)
+		return (NULL);
+	new_node->name = name;
+	new_node->value = value;
+	new_node->equal_sign = equal_sign;
+	new_node->next = NULL;
+	new_node->prev = NULL;
+	return (new_node);
+}
+
+void	add_env_node(t_env **env, t_env *new_node)
+{
+	t_env	*last;
+
+	if (*env == NULL)
+	{
+		*env = new_node;
+		return ;
+	}
+	last = *env;
+	while (last->next)
+		last = last->next;
+	last->next = new_node;
+	new_node->prev = last;
+}
+
+t_env	*init_env(t_data *data, char **env)
+{
+	int		i;
+	char	*equal_pos;
+	t_env	*new_node;
+
+	i = 0;
+	while (env[i])
+	{
+		equal_pos = ft_strchr(env[i], '=');
+		if (equal_pos)
+		{
+			new_node = new_env_node(ft_substr(env[i], 0, equal_pos - env[i]),
+										ft_strdup(equal_pos + 1), 1);
+		}
+		else
+		{
+			new_node = new_env_node(ft_strdup(env[i]), NULL, 0);
+		}
+		add_env_node(&(data->env), new_node);
+		i++;
+	}
+	//imprimer env
+	// while (data->env)
+	// {
+	// 	printf("name: %s\n", data->env->name);
+	// 	printf("value: %s\n", data->env->value);
+	// 	printf("equal_sign: %d\n", data->env->equal_sign);
+	// 	data->env = data->env->next;
+	// }
+	return (data->env);
 }

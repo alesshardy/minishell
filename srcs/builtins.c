@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 18:33:28 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/11 12:32:08 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/22 18:06:40 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,13 +31,11 @@ int	ft_echo(char **args)
 
 /********************************************CD************************************/
 
-int	ft_cd(char **args, t_data *data)
+int		ft_cd(char **args, t_data *data)
 {
 	char	*cwd;
-	char	*tmp;
-
-	printf("args[1] = %s\n", args[1]);
-	printf("args[2] = %s\n", args[2]);
+	t_env	*pwd;
+	t_env	*oldpwd;
 
 	if (!args[1])
 	{
@@ -47,7 +45,6 @@ int	ft_cd(char **args, t_data *data)
 			return (1);
 		}
 	}
-
 	else if (!args[2])
 	{
 		if (chdir(args[1]) == -1)
@@ -68,12 +65,18 @@ int	ft_cd(char **args, t_data *data)
 	cwd = static_cwd(UPDATE);
 	if (!cwd)
 		return (1);
-	tmp = data->env[get_var_index(data, "PWD")];
-	data->env[get_var_index(data, "PWD")] = ft_strjoin("PWD=", cwd);
-	free(tmp);
-	tmp = data->env[get_var_index(data, "OLDPWD")];
-	data->env[get_var_index(data, "OLDPWD")] = ft_strjoin("OLDPWD=", tmp);
-	free(tmp);
+	pwd = get_env_var(data, "PWD");
+	if (pwd)
+	{
+		free(pwd->value);
+		pwd->value = ft_strjoin("PWD=", cwd);
+	}
+	oldpwd = get_env_var(data, "OLDPWD");
+	if (oldpwd)
+	{
+		free(oldpwd->value);
+		oldpwd->value = ft_strjoin("OLDPWD=", cwd);
+	}
 	return (0);
 }
 
@@ -134,16 +137,57 @@ char	*get_pwd(void)
 
 int	ft_env(t_data *data)
 {
-	int	i;
+	t_env	*env;
 
-	i = 0;
-	while (data->env[i])
+	env = data->env;
+	while (env)
 	{
-		ft_putstr_fd(data->env[i], 1);
-		ft_putstr_fd("\n", 1);
-		i++;
+		if (env->value)
+		{
+			ft_putstr_fd(env->name, 1);
+			ft_putstr_fd("=", 1);
+			ft_putstr_fd(env->value, 1);
+			ft_putstr_fd("\n", 1);
+		}
+		env = env->next;
 	}
 	return (0);
 }
 
 /******************************************EXIT**************************************/
+
+int	ft_exit(char **args, t_data *data)
+{
+	int	i;
+	int	exit_code;
+
+	i = 0;
+	if (args[1])
+	{
+		if (args[1][0] == '-')
+			i = 1;
+		while (args[1][i])
+		{
+			if (!ft_isdigit(args[1][i]))
+			{
+				ft_putstr_fd("minishell: exit: ", 2);
+				ft_putstr_fd(args[1], 2);
+				ft_putstr_fd(": numeric argument required\n", 2);
+				exit(2);
+			}
+			i++;
+		}
+		if (args[2])
+		{
+			ft_putstr_fd("minishell: exit: too many arguments\n", 2);
+			return (1);
+		}
+		exit_code = ft_atoi(args[1]);
+		if (exit_code < 0)
+			exit_code = 256 + exit_code;
+		else if (exit_code > 255)
+			exit_code = exit_code % 256;
+		exit(exit_code);
+	}
+	exit(data->exit_status);
+}

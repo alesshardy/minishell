@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/19 16:31:30 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/22 17:36:22 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,11 +78,19 @@ typedef struct s_ast
 	struct s_ast	*right;
 }	t_ast;
 
+typedef struct s_env
+{
+	char			*name;
+	char			*value;
+	int				equal_sign; // a voir si utile
+	struct s_env	*next;
+	struct s_env	*prev;
+}	t_env;
 
 typedef struct s_data
 {
-	char	**env;
-	char	***parsed_env;
+	t_env	*env;
+	char	**env_array;
 	char	*prompt;
 	t_token	*tokens;
 	t_ast	*ast;
@@ -91,19 +99,30 @@ typedef struct s_data
 	int		count_redir_in;
 	int		count_redir_out;
 	int		exit_status;
-	int		here_doc;
+	int		here_doc_fd;
 }	t_data;
 
 /*main.c*/
 char	*prompt(void);
 
 /*environment_init.c*/
+//ancienne version
+// char	**dup_env(char **env);
+// void	init_shell_env_struct(t_data *data, char **env);
+// int		get_var_index(t_data *data, char *var);
+// char	*get_var_value(t_data *data, char *var);
+// void	init_shell_env(t_data *data, char **env);
 
-char	**dup_env(char **env);
-void	init_shell_env_struct(t_data *data, char **env);
-int		get_var_index(t_data *data, char *var);
+t_env	*get_env_var(t_data *data, char *var);
 char	*get_var_value(t_data *data, char *var);
-void	init_shell_env(t_data *data, char **env);
+t_env	*new_env_node(char *name, char *value, int equal_sign);
+void	add_env_node(t_env **env, t_env *new_node);
+t_env	*init_env(t_data *data, char **env);
+
+char	**get_env_array(t_env *env);
+void	free_array(char **array);
+char	*get_cmd_path(char **envp, char *cmd);
+char	*ft_find_path(char **split, char *cmd);
 
 /*check_input.c*/
 int		check_input(char *line);
@@ -153,6 +172,7 @@ char	*static_cwd(int action);
 int		ft_pwd(void);
 char	*get_pwd(void);
 int		ft_env(t_data *data);
+int		ft_exit(char **args, t_data *data);
 
 /*signals*/
 void	signals_handler(void);
@@ -179,5 +199,8 @@ void	adjust_ast(t_ast *node);
 void	handle_here_doc(t_data *data, t_token **tokens);
 char	*create_tmp_file(t_data *data, char *limiter);
 void	delete_tmp_files(void);
+
+/*dollar handler*/
+void	redefine_dollar(t_token **tokens);
 
 #endif

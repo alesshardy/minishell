@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 16:15:43 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/17 16:03:44 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/22 17:35:57 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -318,6 +318,7 @@ t_token	*tokenizer(char *input)
 	}
 	display_tokens(tokens);
 	printf("			REDEFINE\n");
+	redefine_dollar(&tokens);
 	//remove_empty_quotes_from_tokens(tokens); // inuliser pour le moment wtf
 	redefine_word_token(tokens);
 	redefine_cmd_token(tokens);
