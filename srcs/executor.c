@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/22 18:17:40 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/23 15:52:01 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,7 @@ char	*check_cmd_quotes(char *str)
 		}
 		new_str[j] = '\0';
 	}
-	printf("new_str = %s\n", new_str); //fdebug
+	//printf("new_str = %s\n", new_str); //fdebug
 	return (new_str);
 }
 
@@ -193,7 +193,7 @@ void	ft_exec(t_data *data, char **args)
 
 	cmd = get_cmd_path(env_array, args[0]);
 	//ft_putendl_fd("je suis dans ft_exec", 2);//fdebug
-	printf("cmd = %s\n", cmd);//fdebug
+	//printf("cmd = %s\n", cmd);//fdebug
 	pid = fork();
 	if (pid == 0)
 	{

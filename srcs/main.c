@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/22 16:48:54 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/23 15:57:37 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,41 +80,41 @@ void	display_tokens(t_token *tokens)
 
 void print_ast(t_ast *node, int depth)
 {
-    if (node == NULL)
-        return;
+	if (node == NULL)
+		return;
 
-    // Print the current node with indentation
-    for (int i = 0; i < depth; i++)
-        printf("  ");
+	// Print the current node with indentation
+	for (int i = 0; i < depth; i++)
+		printf("  ");
 
- // Print the type of the node
-    switch(node->type) {
-        case WORD:
-            printf("WORD: ");
-            for (int i = 0; node->args[i] != NULL; i++)
-                printf("%s ", node->args[i]);
-            printf("\n");
-            break;
-        case PIPE:
-            printf("PIPE: |\n");
-            break;
-        case REDIR_OUT:
-            printf("REDIR_OUT: >\n");
-            break;
-        case REDIR_IN:
-            printf("REDIR_IN: <\n");
-            break;
-        case REDIR_APPEND:
-            printf("REDIR_APPEND: >>\n");
-            break;
-        case REDIR_HEREDOC:
-            printf("REDIR_HEREDOC: <<\n");
-            break;
+	// Print the type of the node
+	switch(node->type) {
+		case WORD:
+			printf("WORD: ");
+			for (int i = 0; node->args[i] != NULL; i++)
+				printf("%s ", node->args[i]);
+			printf("\n");
+			break;
+		case PIPE:
+			printf("PIPE: |\n");
+			break;
+		case REDIR_OUT:
+			printf("REDIR_OUT: >\n");
+			break;
+		case REDIR_IN:
+			printf("REDIR_IN: <\n");
+			break;
+		case REDIR_APPEND:
+			printf("REDIR_APPEND: >>\n");
+			break;
+		case REDIR_HEREDOC:
+			printf("REDIR_HEREDOC: <<\n");
+			break;
 		case CMD:
 			printf("CMD: ");
 			for (int i = 0; node->args[i] != NULL; i++)
-                printf("%s ", node->args[i]);
-            printf("\n");
+				printf("%s ", node->args[i]);
+			printf("\n");
 			break;
 		case ARG:
 			printf("ARG: ");
@@ -125,33 +125,33 @@ void print_ast(t_ast *node, int depth)
 		case INFILE:
 			printf("INFILE: ");
 			for (int i = 0; node->args[i] != NULL; i++)
-                printf("%s ", node->args[i]);
-            printf("\n");
+				printf("%s ", node->args[i]);
+			printf("\n");
 			break;
 		case OUTFILE:
 			printf("OUTFILE: ");
 			for (int i = 0; node->args[i] != NULL; i++)
-                printf("%s ", node->args[i]);
-            printf("\n");
+				printf("%s ", node->args[i]);
+			printf("\n");
 			break;
 		case LIMITER:
 			printf("LIMITER: ");
 			for (int i = 0; node->args[i] != NULL; i++)
 				printf("%s ", node->args[i]);
 			printf("\n");
-        default:
-            printf("UNKNOWN TYPE\n");
-            break;
-    }
+		default:
+			printf("UNKNOWN TYPE\n");
+			break;
+	}
 
-    if (node->left != NULL) {
-        printf("%*s├─ Left: ", depth * 2, "");
-        print_ast(node->left, depth + 1);
-    }
-    if (node->right != NULL) {
-        printf("%*s└─ Right: ", depth * 2, "");
-        print_ast(node->right, depth + 1);
-    }
+	if (node->left != NULL) {
+		printf("%*s├─ Left: ", depth * 2, "");
+		print_ast(node->left, depth + 1);
+	}
+	if (node->right != NULL) {
+		printf("%*s└─ Right: ", depth * 2, "");
+		print_ast(node->right, depth + 1);
+	}
 }
 /*********************************************MAIN****************************************************/
 
@@ -222,25 +222,17 @@ int	main(int ac, char **av, char **env)
 		data->ast = parse_tokens(&data->tokens);
 		print_ast(data->ast, 0); //visualiser l'arbre
 		//adjust
+		printf("\n		ADJUST CMD AFTER FILE\n");
 		adjust_ast(data->ast);
 		print_ast(data->ast, 0); //visualiser l'arbre
+		printf("\n		ADJUST FILE ARG\n");
+		adjust_ast_file(data->ast);
+		print_ast(data->ast, 0); //visualiser l'arbre
 		//execute
-		count_redirection(data, &data->ast);
-		printf("redir_in : %d\n", data->count_redir_in);
-		printf("redir_out : %d\n", data->count_redir_out);
-		//a suprimer un jour pck ca sert a rien
-		if (data->count_redir_in > 1 || data->count_redir_out > 1)
-		{
-			//printf("first_redir_out : %s\n", data->first_redir_out->right->args[0]); //fou la merde
-			handle_multi_redir(data, data->ast);
-			executor(data, data->ast);
-		}
-		else
-			executor(data, data->ast);
-			
+		executor(data, data->ast);
+
 		free(data->prompt);
 		delete_tmp_files();
-		reset_count_redirection(data);
 	}
 	free(data);
 	return (0);

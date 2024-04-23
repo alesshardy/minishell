@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/22 14:00:25 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/22 18:00:41 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/23 15:51:47 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ char	**get_env_array(t_env *env)
 		i++;
 		env = env->next;
 	}
-	printf("i = %d\n", i);
+	//printf("i = %d\n", i);//fdebug
 	env_array = malloc(sizeof(char *) * (i + 1));
 	if (!env_array)
 		return (NULL);

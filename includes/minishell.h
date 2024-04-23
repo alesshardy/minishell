@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/22 17:36:22 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/23 16:19:01 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,8 +96,8 @@ typedef struct s_data
 	t_ast	*ast;
 	t_ast	*first_redir_out;
 	size_t	token_count;
-	int		count_redir_in;
-	int		count_redir_out;
+	int		count_redir_in; // a voir si utile
+	int		count_redir_out; // a voir si utile
 	int		exit_status;
 	int		here_doc_fd;
 }	t_data;
@@ -161,10 +161,6 @@ void	ft_pipe(t_data *data, t_ast *ast);
 void	ft_redir_out(t_data *data, t_ast *ast);
 void	executor(t_data *data, t_ast *ast);
 
-void	count_redirection(t_data *data, t_ast **ast);
-void	reset_count_redirection(t_data *data);
-void	handle_multi_redir(t_data *data, t_ast *ast);
-
 /*builtins.c*/
 int		ft_echo(char **args);
 int		ft_cd(char **args, t_data *data);
@@ -194,6 +190,9 @@ void	print_ast(t_ast *ast, int level);
 /*adjust_ast*/
 void	move_cmd(t_ast *node);
 void	adjust_ast(t_ast *node);
+void	move_arg(t_ast *node);
+void	adjust_ast_file(t_ast *node);
+
 
 /*here_doc*/
 void	handle_here_doc(t_data *data, t_token **tokens);

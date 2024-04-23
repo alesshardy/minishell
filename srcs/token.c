@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 16:15:43 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/22 17:35:57 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/23 16:33:04 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,10 +83,8 @@ t_token	*new_token(char *value, t_token_type type)
 void	redefine_word_token(t_token *tokens)
 {
 	t_token	*token;
-	int		cmd_count;
 
 	token = tokens;
-	cmd_count = 0;
 	while (token)
 	{
 		if (token->type == WORD)
@@ -102,10 +100,7 @@ void	redefine_word_token(t_token *tokens)
 			/*else if (token->prev && token->prev->type == ENV_VAR)
 				token->type = ARG;*/
 			else
-			{
 				token->type = CMD;
-				cmd_count = 1;
-			}
 		}
 		token = token->next;
 	}
