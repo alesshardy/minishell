@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/17 11:36:41 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/22 12:14:56 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/24 17:47:59 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,14 @@ char	*find_tmp_filename(void) // Trouve un nom de fichier temporaire
 	}
 }
 
+
+void	eof_display(char *limiter)
+{
+	ft_putstr_fd("minishell: warning: here-document delimited by end-of-file (wanted `", 2);
+	ft_putstr_fd(limiter, 2);
+	ft_putstr_fd("')\n", 2);
+}
+
 char	*create_tmp_file(t_data *data, char *limiter)
 {
 	char	*filename;
@@ -66,7 +74,11 @@ char	*create_tmp_file(t_data *data, char *limiter)
 	{
 		line = readline("> "); // Lit une ligne
 		if (line == NULL)
-			break ;
+		{
+			close(data->here_doc_fd);
+			eof_display(limiter);
+			return NULL;
+		}
 		len = ft_strlen(line);
 		if (ft_strncmp(line, limiter, ft_strlen(limiter)) == 0
 			&& (ft_strlen(line)) == ft_strlen(limiter)) // Si la ligne est égale au délimiteur

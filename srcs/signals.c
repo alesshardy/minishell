@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/26 11:29:14 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/10 13:24:06 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/24 17:45:32 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,4 +25,10 @@ void	ctrl_c_handler(int sig)
 	rl_on_new_line();
 	rl_replace_line("", 0);
 	rl_redisplay();
+}
+
+void	handle_sigquit(int sig)
+{
+	(void)sig;
+	write(1, "Quit: 3\n", 8);
 }

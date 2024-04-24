@@ -1,25 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strlen.c                                        :+:      :+:    :+:   */
+/*   ft_realloc.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/07 11:15:54 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/23 16:59:14 by apintus          ###   ########.fr       */
+/*   Created: 2024/04/23 16:41:23 by apintus           #+#    #+#             */
+/*   Updated: 2024/04/23 16:41:33 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-size_t	ft_strlen(const	char *s)
+void	*ft_realloc(void *ptr, size_t newsize)
 {
-	size_t	i;
+	char	*newptr;
+	size_t	cursize;
 
-	if (!s)
-		return (0);
-	i = 0;
-	while (s[i] != '\0')
-		i++;
-	return (i);
+	if (ptr == 0)
+		return (malloc(newsize));
+	cursize = sizeof(ptr);
+	if (newsize <= cursize)
+		return (ptr);
+	newptr = malloc(newsize);
+	ft_memcpy(ptr, newptr, cursize);
+	free(ptr);
+	return (newptr);
 }

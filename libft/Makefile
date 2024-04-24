@@ -6,7 +6,7 @@
 #    By: apintus <apintus@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/11/14 12:20:45 by apintus           #+#    #+#              #
-#    Updated: 2024/04/11 13:16:54 by apintus          ###   ########.fr        #
+#    Updated: 2024/04/23 16:42:51 by apintus          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -63,7 +63,8 @@ SRCS =	ft_isalpha.c\
 		ft_putstr.c\
 		ft_utils.c\
 		ft_strcmp.c\
-		ft_strncpy.c
+		ft_strncpy.c\
+		ft_realloc.c\
 
 BONUS =	ft_lstnew.c\
 		ft_lstadd_front.c\

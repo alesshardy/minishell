@@ -6,26 +6,66 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 18:33:28 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/22 18:06:40 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/24 17:28:02 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
 /********************************************ECH0************************************/
-int	ft_echo(char **args)
+// int	ft_echo(char **args)
+// {
+// 	int	i;
+
+// 	i = 1;
+// 	while (args[i])
+// 	{
+// 		ft_putstr_fd(args[i], 1);
+// 		if (args[i + 1])
+// 			ft_putstr_fd(" ", 1);
+// 		i++;
+// 	}
+// 	ft_putstr_fd("\n", 1);
+// 	return (0);
+// }
+
+static bool	only_n(char *str)
 {
 	int	i;
 
-	i = 1;
-	while (args[i])
+	i = 0;
+	if (!str[i])
+		return (false);
+	while (str[i])
 	{
-		ft_putstr_fd(args[i], 1);
-		if (args[i + 1])
-			ft_putstr_fd(" ", 1);
+		if (str[i] != 'n')
+			return (false);
 		i++;
 	}
-	ft_putstr_fd("\n", 1);
+	return (true);
+}
+
+int	ft_echo(char **cmd)
+{
+	int		i;
+	bool	flag;
+
+	i = 1;
+	flag = false;
+	while (cmd[i] && cmd[i][0] == '-' && only_n(cmd[i] + 1))
+	{
+		flag = true;
+		i++;
+	}
+	while (cmd[i])
+	{
+		printf("%s", cmd[i]);
+		if (cmd[i + 1])
+			printf(" ");
+		i++;
+	}
+	if (!flag)
+		printf("\n");
 	return (0);
 }
 

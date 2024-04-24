@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/23 15:57:37 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/24 18:06:35 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,12 +169,33 @@ char	*get_prompt(void)
 	free(pwd);
 	return (prompt);
 }
+// char	*prompt()
+// {
+// 	char	*prompt;
+// 	char	*line;
+// 	prompt = get_prompt();
+// 	line = readline(prompt);
+// 	add_history(line);
+// 	return (line);
+// }
+
+// prompt avec gestion de CTRL + D
 char	*prompt()
 {
 	char	*prompt;
 	char	*line;
 	prompt = get_prompt();
 	line = readline(prompt);
+	if (line == NULL)
+	{
+		printf("exit\n");
+		exit(0);
+	}
+	else if (line[0] == '\0')  // Check if the line is empty
+	{
+		free(line);
+		ft_strdup("");
+	}
 	add_history(line);
 	return (line);
 }

@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/23 15:52:01 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/24 18:47:10 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ char	*remove_quotes_file(char *str)
 	j = 0;
 	new_str = malloc(ft_strlen(str) + 1);
 	if (new_str == NULL)
-		return NULL;
+		return (NULL);
 	if ((str[0] == '\'' || str[0] == '\"') && str[ft_strlen(str) - 1] == str[0])
 	{
 		while (str[++i] != str[0])
@@ -133,7 +133,7 @@ char	*remove_quotes_file(char *str)
 		new_str[j] = '\0';
 	}
 	free(str);
-	return new_str;
+	return (new_str);
 }
 
 /*************************************EXEC*************************************/
@@ -179,15 +179,24 @@ void	ft_exec(t_data *data, char **args)
 	int		status;
 	char	*cmd;
 	char	**env_array;
-	int		i;
+	int		i; //a suprrimer si aps laissezla boucle
 
+
+	signal(SIGINT, SIG_DFL);  // Reset to default behavior
+	signal(SIGQUIT, SIG_DFL);  // Reset to default behavior
 	i = 0;
-	while(args[i])
-	{
-		//ft_putendl_fd(args[i], 2); //fdebug
-		args[i] = check_cmd_quotes(args[i]);
-		i++;
-	}
+	printf("PRECLEAN\n");
+	printf("args[0] = %s\n", args[0]);
+	args[0] = remove_outer_quotes(args[0]);
+	printf("args[0] = %s\n", args[0]);
+	args[0] = check_cmd_quotes(args[0]);
+	// while(args[i])
+	// {
+	// 	//ft_putendl_fd(args[i], 2); //fdebug
+	// 	args[i] = check_cmd_quotes(args[i]); //faut je verif si on est dans un ARG ou CMD
+	// 	printf("args[%d] = %s\n", i, args[i]); //fdebug
+	// 	i++;
+	// }
 
 	env_array = get_env_array(data->env);
 
@@ -212,6 +221,9 @@ void	ft_exec(t_data *data, char **args)
 	}
 	else
 		waitpid(pid, &status, 0);
+
+	signal(SIGINT, ctrl_c_handler);  // Restore signal handlers
+	signal(SIGQUIT, handle_sigquit);  // Restore signal handlers
 
 }
 
@@ -245,6 +257,52 @@ void	ft_pipe(t_data *data, t_ast *ast)
 	close(saved_stdin);
 }
 
+/* void	ft_pipe(t_data *data, t_ast *ast)
+{
+	int		fd[2];
+	pid_t	pid;
+	int		status;
+	int		saved_stdin;
+	int		saved_stdout;
+
+	saved_stdin = dup(STDIN_FILENO);  // Sauvegarder l'entrée standard
+	saved_stdout = dup(STDOUT_FILENO);  // Sauvegarder la sortie standard
+
+	t_ast	*current = ast;
+	while (current != NULL)
+	{
+		pipe(fd);
+		pid = fork();
+		if (pid == 0)
+		{
+			dup2(saved_stdin, STDIN_FILENO);
+			if (current->right != NULL)  // Si ce n'est pas la dernière commande
+				dup2(fd[1], STDOUT_FILENO);
+			close(fd[0]);
+			close(fd[1]);
+			executor(data, current->left);
+			exit(0);
+		}
+		else
+		{
+			close(fd[1]);
+			dup2(fd[0], STDIN_FILENO);
+			close(fd[0]);
+			current = current->right;
+		}
+	}
+
+	dup2(saved_stdout, STDOUT_FILENO);  // Restaurer la sortie standard
+	close(saved_stdout);
+
+	// Attendre que tous les processus enfants se terminent
+	while ((pid = wait(&status)) > 0)
+		;
+
+	dup2(saved_stdin, STDIN_FILENO);  // Restaurer l'entrée standard
+	close(saved_stdin);
+} */
+
 void	ft_redir_out(t_data *data, t_ast *ast)
 {
 	int		fd;
@@ -253,7 +311,7 @@ void	ft_redir_out(t_data *data, t_ast *ast)
 
 	saved_stdout = dup(STDOUT_FILENO);  // Sauvegarder la sortie standard
 
-	ast->right->args[0] = remove_quotes_file(ast->right->args[0]); // remove quotes from file name
+	//ast->right->args[0] = remove_quotes_file(ast->right->args[0]); // remove quotes from file name
 	if (ast->type == REDIR_OUT)
 		fd = open(ast->right->args[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	else
@@ -321,7 +379,7 @@ void	ft_redir_in(t_data *data, t_ast *ast)
 
 	saved_stdin = dup(STDIN_FILENO);  // Sauvegarder l'entrée standard
 
-	ast->right->args[0] = remove_quotes_file(ast->right->args[0]); // remove quotes from file name
+	//ast->right->args[0] = remove_quotes_file(ast->right->args[0]); // remove quotes from file name
 	fd = open(ast->right->args[0], O_RDONLY);
 	if (fd < 0)
 	{
@@ -358,10 +416,11 @@ void	handle_redirections(t_data *data, t_ast *ast)
 
 void	executor(t_data *data, t_ast *ast)
 {
-    if (ast == NULL) {
-        printf("Error: ast is NULL\n");
-        return;
-    }
+	if (ast == NULL)
+	{
+		printf("Error: ast is NULL\n");
+		return;
+	}
 	if (ast->type == CMD)
 	{
 		if (ft_strncmp(ast->args[0], "echo", 4) == 0)
@@ -383,16 +442,7 @@ void	executor(t_data *data, t_ast *ast)
 	}
 	else if (ast->type == PIPE)
 		ft_pipe(data, ast);
-	// else if (ast->type == REDIR_OUT || ast->type == REDIR_APPEND)
-	// 	ft_redir_out(data, ast);
-	// else if (ast->type == REDIR_IN)
-	// 	ft_redir_in(data, ast);
 	else
 		handle_redirections(data, ast);
-	// else
-	// {
-	// 	printf("Error: unknown ast type\n");
-	// 	return;
-	// }
 }
 

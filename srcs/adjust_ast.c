@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/17 16:20:17 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/23 15:46:41 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/24 15:26:23 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,11 +64,38 @@ void	adjust_ast(t_ast *node)
 	adjust_ast(node->right);
 }
 
+char *cleaner_quotes_arg(char *arg)
+{
+	int		length;
+	char	*new_arg;
+	int		i = 0;
+	int		j = 0;
+	char	in_quotes = 0;
+
+	length = ft_strlen(arg);
+	new_arg = malloc(length + 1);
+	if (new_arg == NULL)
+		return (NULL);
+	while (i < length)
+	{
+		if ((arg[i] == '\'' || arg[i] == '\"') && !in_quotes)
+			in_quotes = arg[i];
+		else if (arg[i] == in_quotes)
+			in_quotes = 0;
+		else
+			new_arg[j++] = arg[i];
+		i++;
+	}
+	new_arg[j] = '\0';
+	return (new_arg);
+}
+
 void	move_arg(t_ast *node)
 {
-	int	arg_count_right;
-	int	arg_count_left;
-	int	i;
+	int		arg_count_right;
+	int		arg_count_left;
+	int		i;
+	char	*new_arg;
 
 	if (node->right->args[1] != NULL) // Si il y a plus d'un argument à droite
 	{
@@ -76,28 +103,35 @@ void	move_arg(t_ast *node)
 		arg_count_right = 0;
 		while (node->right->args[arg_count_right] != NULL)
 			arg_count_right++;
+		printf("arg_count_right = %d\n", arg_count_right);	//fdebug
 
 		// Compter le nombre d'arguments dans le noeud de gauche
 		arg_count_left = 0;
 		while (node->left->args[arg_count_left] != NULL)
 			arg_count_left++;
-
+		printf("arg_count_left = %d\n", arg_count_left);	//fdebug
 		// Allouer un nouveau tableau pour les arguments du noeud de gauche
 		node->left->args = realloc(node->left->args, sizeof(char*) * (arg_count_left + arg_count_right + 1));
 
+		arg_count_right--; // On ne copie pas le premier argument du noeud de droite
 		// Copier les arguments du noeud de droite vers le noeud de gauche
 		i = 0;
 		while (i < arg_count_right)
 		{
-			node->left->args[arg_count_left + i] = node->right->args[i + 1];
+			// Supprimer les guillemets extérieurs de l'argument
+			new_arg = cleaner_quotes_arg(node->right->args[i + 1]);
+			printf("new_arg = %s\n", new_arg);	//fdebug
+			//new_arg = node->right->args[i + 1];
+			node->left->args[arg_count_left + i] = new_arg;
 			i++;
 		}
 		node->left->args[arg_count_left + i] = NULL;
 
 		// Supprimer les arguments après le premier du noeud de droite
 		node->right->args[1] = NULL;
-	}
+		}
 }
+
 
 void	adjust_ast_file(t_ast *node)
 {

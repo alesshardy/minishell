@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/23 16:19:01 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/24 17:45:51 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 # include <errno.h>
 # include <sys/types.h>
 # include <sys/wait.h>
+# include <stdbool.h>
 
 # define MAX_ARGS 1024
 # define HERE_DOC_FILE "/tmp/.here_doc"
@@ -141,6 +142,7 @@ t_token	*tokenizer(char *input);
 
 void	redefine_word_token(t_token *tokens);
 void	redefine_cmd_token(t_token *tokens);
+char	*remove_outer_quotes(char *word);
 
 /*parser.c*/
 t_ast	*create_ast(t_token *tokens);
@@ -173,6 +175,7 @@ int		ft_exit(char **args, t_data *data);
 /*signals*/
 void	signals_handler(void);
 void	ctrl_c_handler(int sig);
+void	handle_sigquit(int sig);
 
 /*redefine*/
 // void	redefine_word_token(t_token *tokens);
