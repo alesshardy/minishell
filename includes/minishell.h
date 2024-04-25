@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/25 11:59:03 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/25 17:36:21 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <stdbool.h>
+
+extern int	global_var;
 
 # define MAX_ARGS 1024
 # define HERE_DOC_FILE "/tmp/.here_doc"
@@ -101,10 +103,10 @@ typedef struct s_data
 	int		count_redir_out; // a voir si utile
 	int		exit_status;
 	int		here_doc_fd;
-}	t_data;
+	}	t_data;
 
 /*main.c*/
-char	*prompt(void);
+char	*prompt();
 
 /*environment_init.c*/
 //ancienne version
@@ -138,7 +140,7 @@ void	add_token(t_token **tokens, t_token *new_token);
 t_token	*new_token(char *value, t_token_type type);
 void	handle_redirection(char **input, t_token **tokens);
 void	handle_word(char **input, t_token **tokens);
-t_token	*tokenizer(char *input);
+t_token	*tokenizer(char *input, t_data *data);
 
 void	redefine_word_token(t_token *tokens);
 void	redefine_cmd_token(t_token *tokens);
@@ -171,6 +173,8 @@ int		ft_pwd(void);
 char	*get_pwd(void);
 int		ft_env(t_data *data);
 int		ft_exit(char **args, t_data *data);
+int		ft_export(char **args, t_data *data);
+int		ft_unset(char **args, t_data *data);
 
 /*signals*/
 void	signals_handler(void);
@@ -203,6 +207,6 @@ char	*create_tmp_file(t_data *data, char *limiter);
 void	delete_tmp_files(void);
 
 /*dollar handler*/
-void	redefine_dollar(t_token **tokens);
+void	redefine_dollar(t_token **tokens, t_env *env);
 
 #endif

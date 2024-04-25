@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/25 12:51:39 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/25 17:37:12 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,7 +164,15 @@ void	ft_exec(t_data *data, char **args)
 			ft_putstr_fd(args[0], 2);
 			ft_putstr_fd(": ", 2);
 			if (errno ==ENOENT)
-				ft_putstr_fd("command not found", 2);
+			{
+				ft_putstr_fd("Command not found", 2);
+				exit(127);
+			}
+			else if (errno == EACCES)
+			{
+				ft_putstr_fd("Permission denied\n", 2);
+				exit(126);
+			}
 			else
 				ft_putstr_fd(strerror(errno), 2);
 			ft_putstr_fd("\n", 2);
@@ -174,6 +182,7 @@ void	ft_exec(t_data *data, char **args)
 	else
 	{
 		waitpid(pid, &status, 0);
+		global_var = status >> 8;
 	}
 
 	signal(SIGINT, ctrl_c_handler);  // Restore signal handlers
@@ -189,7 +198,7 @@ void	ft_pipeline(t_data *data, t_ast *ast)
 
 	pipe(fd);
 	pid = fork();
-	if (pid == 0)
+	if (pid == 0) //child
 	{
 		dup2(fd[1], 1);
 		close(fd[0]);
@@ -197,10 +206,10 @@ void	ft_pipeline(t_data *data, t_ast *ast)
 		executor(data, ast->left);
 		exit(0);
 	}
-	else
+	else //parent
 	{
 		pid2 = fork();
-		if (pid2 == 0)
+		if (pid2 == 0) //child
 		{
 			dup2(fd[0], 0);
 			close(fd[0]);
@@ -208,12 +217,14 @@ void	ft_pipeline(t_data *data, t_ast *ast)
 			executor(data, ast->right);
 			exit(0);
 		}
-		else
+		else //parent
 		{
 			close(fd[0]);
 			close(fd[1]);
 			waitpid(pid, &status, 0);
+			global_var = status >> 8;
 			waitpid(pid2, &status, 0);
+			global_var = status >> 8;
 		}
 	}
 }
@@ -419,6 +430,7 @@ void	executor(t_data *data, t_ast *ast)
 	if (ast == NULL)
 	{
 		printf("Error: ast is NULL\n");
+		//data->last_exit_status = 0;
 		return;
 	}
 	if (ast->type == CMD)
@@ -430,13 +442,15 @@ void	executor(t_data *data, t_ast *ast)
 		else if (ft_strncmp(ast->args[0], "pwd", 3) == 0)
 			ft_pwd();
 		else if (ft_strncmp(ast->args[0], "export", 6) == 0)
-			return ;
+			ft_export(ast->args, data);
 		else if (ft_strncmp(ast->args[0], "unset", 5) == 0)
-			return ;
+			ft_unset(ast->args, data);
 		else if (ft_strncmp(ast->args[0], "env", 3) == 0)
 			ft_env(data);
 		else if (ft_strncmp(ast->args[0], "exit", 4) == 0)
 			ft_exit(ast->args, data);
+		else if (ft_strncmp(ast->args[0], "siu", 3) == 0)
+			printf("%d\n", global_var);
 		else
 			ft_exec(data, ast->args);
 	}

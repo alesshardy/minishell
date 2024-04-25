@@ -6,11 +6,13 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/24 18:06:35 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/25 17:02:04 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+
+int	global_var = 0;
 
 // char *delete_exces_space(char *str)
 // {
@@ -186,13 +188,19 @@ char	*prompt()
 	char	*line;
 	prompt = get_prompt();
 	line = readline(prompt);
+	//(void)data;
 	if (line == NULL)
 	{
 		printf("exit\n");
 		exit(0);
 	}
-	else if (line[0] == '\0')  // Check if the line is empty
+	else if (line[0] == '\0' || !ft_strcmp(line, ":")
+			|| !ft_strcmp(line, "#") || !ft_strcmp(line, "!"))  // Check if the line is empty
 	{
+		if (!ft_strcmp(line, ":") || !ft_strcmp(line, "#"))
+			global_var = 0; // retour particulier
+		if (!ft_strcmp(line, "!"))
+			global_var = 1; // retour particulier
 		free(line);
 		ft_strdup("");
 	}
@@ -235,7 +243,7 @@ int	main(int ac, char **av, char **env)
 		data->prompt = prompt();
 		printf("prompt : %s\n", data->prompt); //visualiser le prompt
 		//tokenize
-		data->tokens = tokenizer(data->prompt);
+		data->tokens = tokenizer(data->prompt, data);
 		display_tokens(data->tokens); //visualiser les tokens
 		//handle here_doc
 		handle_here_doc(data, &data->tokens);
@@ -251,7 +259,6 @@ int	main(int ac, char **av, char **env)
 		print_ast(data->ast, 0); //visualiser l'arbre
 		//execute
 		executor(data, data->ast);
-
 		free(data->prompt);
 		delete_tmp_files();
 	}

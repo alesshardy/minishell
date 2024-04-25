@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 18:33:28 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/24 17:28:02 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/25 17:35:44 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,182 @@ char	*get_pwd(void)
 
 /***************************************EXPORT**************************************/
 
+int	add_env_var(t_data *data, char *var)
+{
+	t_env	*env;
+	t_env	*tmp;
+	char	*name;
+	char	*value;
+
+	name = ft_substr(var, 0, ft_strchr(var, '=') - var);
+	if (!name)
+		return (1);
+	value = ft_strdup(ft_strchr(var, '=') + 1);
+	if (!value)
+	{
+		free(name);
+		return (1);
+	}
+	env = new_env_node(name, value, 1);
+	if (!env)
+	{
+		free(name);
+		free(value);
+		return (1);
+	}
+	tmp = data->env;
+	while (tmp->next)
+		tmp = tmp->next;
+	tmp->next = env;
+	env->prev = tmp;
+	return (0);
+}
+
+static char	**duplicate_env(t_data *data)
+{
+	t_env	*env;
+	int		count;
+	char	**names;
+	int		i;
+
+	count = 0;
+	env = data->env;
+	while (env)
+	{
+		count++;
+		env = env->next;
+	}
+	names = malloc(sizeof(char *) * (count + 1));
+	i = 0;
+	env = data->env;
+	while (env)
+	{
+		names[i++] = env->name;
+		env = env->next;
+	}
+	names[i] = NULL;
+	return (names);
+}
+
+static void	sort_env(char **env)
+{
+	int		i;
+	int		j;
+	char	*tmp;
+
+	i = 0;
+	while (env[i])
+	{
+		j = i + 1;
+		while (env[j])
+		{
+			if (strcmp(env[i], env[j]) > 0)
+			{
+				tmp = env[i];
+				env[i] = env[j];
+				env[j] = tmp;
+			}
+			j++;
+		}
+		i++;
+	}
+}
+
+static int	ft_export_no_args(t_data *data)
+{
+	char	**names;
+	int		i;
+	t_env	*env;
+
+	names = duplicate_env(data);
+	sort_env(names);
+	i = 0;
+	while (names[i])
+	{
+		env = get_env_var(data, names[i]);
+		printf("export -x %s", names[i]);
+		if (env->value)
+			printf("=\"%s\"", env->value);
+		printf("\n");
+		i++;
+	}
+	free(names);
+	return (0);
+}
+int	ft_export(char **args, t_data *data)
+{
+	int		i;
+	char	*tmp;
+	t_env	*env;
+
+	if (!args[1])
+		return (ft_export_no_args(data));
+	i = 1;
+	while (args[i])
+	{
+		if (ft_strchr(args[i], '='))
+		{
+			tmp = ft_substr(args[i], 0, ft_strchr(args[i], '=') - args[i]);
+			if (!tmp)
+				return (1);
+			env = get_env_var(data, tmp);
+			if (env)
+			{
+				free(env->value);
+				env->value = ft_strdup(ft_strchr(args[i], '=') + 1);
+			}
+			else
+				add_env_var(data, args[i]);
+			free(tmp);
+		}
+		else
+		{
+			env = get_env_var(data, args[i]);
+			if (env)
+
+				env->value = NULL;
+			else
+			{
+				// Ajoutez une vérification ici pour vous assurer que add_env_var a réussi
+				if (add_env_var(data, args[i]) != 0)
+				{
+					return (1);
+				}
+			}
+		}
+		i++;
+	}
+	return (0);
+}
+
 /******************************************UNSET************************************/
+
+int	ft_unset(char **args, t_data *data)
+{
+	int		i;
+	t_env	*env;
+	t_env	*tmp;
+
+	i = 1;
+	while (args[i])
+	{
+		env = get_env_var(data, args[i]);
+		if (env)
+		{
+			if (env->prev)
+				env->prev->next = env->next;
+			if (env->next)
+				env->next->prev = env->prev;
+			tmp = env->next;
+			free(env->name);
+			free(env->value);
+			free(env);
+			env = tmp;
+		}
+		i++;
+	}
+	return (0);
+}
 
 /********************************************ENV************************************/
 

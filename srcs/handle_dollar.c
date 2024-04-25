@@ -6,16 +6,35 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/22 17:10:15 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/22 18:08:42 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/25 17:32:47 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-char	*expand_env(char *line)
+char	*get_env_value(char *var, t_env *env)
+{
+	t_env	*tmp;
+
+	tmp = env;
+	while (tmp != NULL)
+	{
+		if (ft_strcmp(tmp->name, var) == 0)
+		{
+			if (tmp->value)
+				return (ft_strdup(tmp->value));
+			else
+				return (ft_strdup(""));
+		}
+		tmp = tmp->next;
+	}
+	return (NULL);
+}
+
+char	*expand_env(char *line, t_env *env)
 {
 	char	*new_line;
-	char	*env;
+	char	*env_value;
 	size_t	i;
 	size_t	j;
 	size_t	start;
@@ -42,11 +61,18 @@ char	*expand_env(char *line)
 			start = i;
 			while (line[i] != '\0' && (ft_isalnum(line[i]) || line[i] == '_'))
 				i++;
-			env = getenv(ft_substr(line, start, i - start));
-			if (env)
+			if (line[start] == '?') // si la variable est $?
 			{
-				while (*env)
-					new_line[j++] = *env++;
+				env_value = ft_itoa(global_var);
+				printf("env_value = %s\n", env_value);
+				i++; // on incrémente i pour ne pas prendre le ?
+			}
+			else
+				env_value = get_env_value(ft_substr(line, start, i - start), env);
+			if (env_value)
+			{
+				while (*env_value)
+					new_line[j++] = *env_value++;
 			}
 		}
 		else
@@ -86,7 +112,7 @@ int	has_only_dollar(char *line)
 	return (1);
 } // cette fonction vérifie si la ligne contient uniquement un dollar
 
-void	redefine_dollar(t_token **tokens)
+void	redefine_dollar(t_token **tokens, t_env *env)
 {
 	t_token	*tmp;
 	char	*new_value;
@@ -96,7 +122,7 @@ void	redefine_dollar(t_token **tokens)
 	{
 		if (has_dollar(tmp->value) && !has_only_dollar(tmp->value))
 		{
-			new_value = expand_env(tmp->value);
+			new_value = expand_env(tmp->value, env);
 			free(tmp->value);
 			tmp->value = new_value;
 		}

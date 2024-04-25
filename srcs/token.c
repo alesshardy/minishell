@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 16:15:43 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/24 16:42:31 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/25 17:33:10 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,14 +293,18 @@ void remove_outer_quotes_from_tokens(t_token *tokens)
 }
 
 //main tokenizer
-t_token	*tokenizer(char *input)
+t_token	*tokenizer(char *input, t_data *data)
 {
 	t_token	*tokens;
 
 	tokens = NULL;
+	(void)data;
 	//check input
 	if (check_input(input) == 1)
+	{
+		global_var = 2;
 		return (NULL);
+	}
 	while(*input)
 	{
 		while ((*input) && (*input == ' ' || *input == '\t'
@@ -313,7 +317,7 @@ t_token	*tokenizer(char *input)
 	}
 	display_tokens(tokens);
 	printf("			REDEFINE\n");
-	redefine_dollar(&tokens);
+	redefine_dollar(&tokens, data->env);
 	//remove_empty_quotes_from_tokens(tokens); // inuliser pour le moment wtf
 	redefine_word_token(tokens);
 	redefine_cmd_token(tokens);
