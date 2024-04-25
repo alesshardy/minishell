@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/24 18:47:10 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/25 12:51:39 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,42 +138,88 @@ char	*remove_quotes_file(char *str)
 
 /*************************************EXEC*************************************/
 
-// ft_exec ancienne version
-/* void	ft_exec(t_data *data, char **args)
+void	ft_exec(t_data *data, char **args)
 {
 	pid_t	pid;
-	int		status;
 	char	*cmd;
-	int		i;
+	char	**env_array;
+	int		status;
 
-	i = 0;
-	while(args[i])
-	{
-		args[i] = check_cmd_quotes(args[i]);
-		//printf("args[%d] = %s\n", i, args[i]); //fdebug
-		i++;
-	}
-	cmd = ft_strjoin(ft_strncmp(data->env[0], "PATH=", 5) == 0 ? data->env[0] + 5 : "/bin/", args[0]); // a changer
-	//printf("cmd = %s\n", cmd); //fdebug
+	signal(SIGINT, SIG_DFL);  // Reset to default behavior
+	signal(SIGQUIT, SIG_DFL);  // Reset to default behavior
+
+	args[0] = remove_outer_quotes(args[0]);
+	args[0] = check_cmd_quotes(args[0]);
+
+	env_array = get_env_array(data->env);
+
+	cmd = get_cmd_path(env_array, args[0]);
+
 	pid = fork();
 	if (pid == 0)
 	{
-		if (execve(cmd, args, data->env) == -1)
+		if (execve(cmd, args, env_array) == -1)
 		{
-			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd("minishell:", 2);
 			ft_putstr_fd(args[0], 2);
 			ft_putstr_fd(": ", 2);
-			ft_putstr_fd(strerror(errno), 2);
+			if (errno ==ENOENT)
+				ft_putstr_fd("command not found", 2);
+			else
+				ft_putstr_fd(strerror(errno), 2);
 			ft_putstr_fd("\n", 2);
 			exit(1);
 		}
 	}
 	else
+	{
 		waitpid(pid, &status, 0);
+	}
 
-} */
+	signal(SIGINT, ctrl_c_handler);  // Restore signal handlers
+	signal(SIGQUIT, handle_sigquit);  // Restore signal handlers
+}
 
-void	ft_exec(t_data *data, char **args)
+void	ft_pipeline(t_data *data, t_ast *ast)
+{
+	int		fd[2];
+	pid_t	pid;
+	pid_t	pid2;
+	int		status;
+
+	pipe(fd);
+	pid = fork();
+	if (pid == 0)
+	{
+		dup2(fd[1], 1);
+		close(fd[0]);
+		close(fd[1]);
+		executor(data, ast->left);
+		exit(0);
+	}
+	else
+	{
+		pid2 = fork();
+		if (pid2 == 0)
+		{
+			dup2(fd[0], 0);
+			close(fd[0]);
+			close(fd[1]);
+			executor(data, ast->right);
+			exit(0);
+		}
+		else
+		{
+			close(fd[0]);
+			close(fd[1]);
+			waitpid(pid, &status, 0);
+			waitpid(pid2, &status, 0);
+		}
+	}
+}
+
+//ancienne version
+/* void	ft_exec(t_data *data, char **args)
 {
 	pid_t	pid;
 	int		status;
@@ -227,7 +273,7 @@ void	ft_exec(t_data *data, char **args)
 
 }
 
-void	ft_pipe(t_data *data, t_ast *ast)
+void	ft_pipeline(t_data *data, t_ast *ast)
 {
 	int		fd[2];
 	pid_t	pid;
@@ -253,52 +299,6 @@ void	ft_pipe(t_data *data, t_ast *ast)
 		waitpid(pid, &status, 0);
 		executor(data, ast->right);
 	}
-	dup2(saved_stdin, STDIN_FILENO);  // Restaurer l'entrée standard
-	close(saved_stdin);
-}
-
-/* void	ft_pipe(t_data *data, t_ast *ast)
-{
-	int		fd[2];
-	pid_t	pid;
-	int		status;
-	int		saved_stdin;
-	int		saved_stdout;
-
-	saved_stdin = dup(STDIN_FILENO);  // Sauvegarder l'entrée standard
-	saved_stdout = dup(STDOUT_FILENO);  // Sauvegarder la sortie standard
-
-	t_ast	*current = ast;
-	while (current != NULL)
-	{
-		pipe(fd);
-		pid = fork();
-		if (pid == 0)
-		{
-			dup2(saved_stdin, STDIN_FILENO);
-			if (current->right != NULL)  // Si ce n'est pas la dernière commande
-				dup2(fd[1], STDOUT_FILENO);
-			close(fd[0]);
-			close(fd[1]);
-			executor(data, current->left);
-			exit(0);
-		}
-		else
-		{
-			close(fd[1]);
-			dup2(fd[0], STDIN_FILENO);
-			close(fd[0]);
-			current = current->right;
-		}
-	}
-
-	dup2(saved_stdout, STDOUT_FILENO);  // Restaurer la sortie standard
-	close(saved_stdout);
-
-	// Attendre que tous les processus enfants se terminent
-	while ((pid = wait(&status)) > 0)
-		;
-
 	dup2(saved_stdin, STDIN_FILENO);  // Restaurer l'entrée standard
 	close(saved_stdin);
 } */
@@ -441,7 +441,7 @@ void	executor(t_data *data, t_ast *ast)
 			ft_exec(data, ast->args);
 	}
 	else if (ast->type == PIPE)
-		ft_pipe(data, ast);
+		ft_pipeline(data, ast);
 	else
 		handle_redirections(data, ast);
 }
