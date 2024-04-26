@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/22 14:00:25 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/23 15:51:47 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/26 17:52:41 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,11 +98,13 @@ void	free_array(char **array)
 {
 	int	i;
 
+	if (!array) //ajout
+		return ;
 	i = 0;
 	while (array[i])
 	{
-		free(array[i]);
+		free(array[i]); // delete array[i]
 		i++;
 	}
-	free(array);
+	free(array); // delete array
 }

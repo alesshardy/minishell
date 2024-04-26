@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/25 17:37:12 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/26 18:10:14 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,7 @@ char	*check_cmd_quotes(char *str)
 		}
 		new_str[j] = '\0';
 	}
+	free(str); //ajout pour free str
 	//printf("new_str = %s\n", new_str); //fdebug
 	return (new_str);
 }
@@ -181,6 +182,9 @@ void	ft_exec(t_data *data, char **args)
 	}
 	else
 	{
+		free_array(env_array); //ajout pour free env_array
+		free(cmd); //ajout pour free cmd
+		//free_array(args);//ajout pour free args
 		waitpid(pid, &status, 0);
 		global_var = status >> 8;
 	}
@@ -459,4 +463,3 @@ void	executor(t_data *data, t_ast *ast)
 	else
 		handle_redirections(data, ast);
 }
-

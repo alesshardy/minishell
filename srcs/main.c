@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/25 17:02:04 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/26 17:43:18 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,6 +205,7 @@ char	*prompt()
 		ft_strdup("");
 	}
 	add_history(line);
+	free(prompt); //free prompt
 	return (line);
 }
 
@@ -216,11 +217,10 @@ t_data	*initialize_data()
 		data->env = NULL;
 		data->prompt = NULL;
 		data->tokens = NULL;
+		data->first_token = NULL;
 		data->token_count = 0;
-		data->count_redir_in = 0;
-		data->count_redir_out = 0;
 	}
-	return data;
+	return (data);
 }
 
 int	main(int ac, char **av, char **env)
@@ -248,6 +248,7 @@ int	main(int ac, char **av, char **env)
 		//handle here_doc
 		handle_here_doc(data, &data->tokens);
 		//parse
+		data->first_token = data->tokens; // pointeur sur le premier token
 		data->ast = parse_tokens(&data->tokens);
 		print_ast(data->ast, 0); //visualiser l'arbre
 		//adjust
@@ -259,7 +260,8 @@ int	main(int ac, char **av, char **env)
 		print_ast(data->ast, 0); //visualiser l'arbre
 		//execute
 		executor(data, data->ast);
-		free(data->prompt);
+		//free(data->prompt);
+		ft_free_data(data);
 		delete_tmp_files();
 	}
 	free(data);

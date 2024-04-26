@@ -6,7 +6,7 @@
 #    By: apintus <apintus@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/15 12:43:39 by apintus           #+#    #+#              #
-#    Updated: 2024/04/23 15:54:45 by apintus          ###   ########.fr        #
+#    Updated: 2024/04/26 11:49:21 by apintus          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,6 +37,7 @@ SRCS = srcs/main.c\
 		srcs/adjust_ast.c\
 		srcs/env_utils.c\
 		srcs/handle_dollar.c\
+		srcs/cleanning.c\
 
 OBJS = $(SRCS:.c=.o)
 

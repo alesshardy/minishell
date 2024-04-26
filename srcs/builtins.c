@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 18:33:28 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/25 17:35:44 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/26 16:57:08 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ int	ft_echo(char **cmd)
 	}
 	if (!flag)
 		printf("\n");
+	global_var = 0; // exit remis a 0 quand echo excuter
 	return (0);
 }
 
@@ -388,7 +389,10 @@ int	ft_exit(char **args, t_data *data)
 				ft_putstr_fd("minishell: exit: ", 2);
 				ft_putstr_fd(args[1], 2);
 				ft_putstr_fd(": numeric argument required\n", 2);
-				exit(2);
+				//exit(2);
+				//data->exit_status = 2; // v2
+				global_var = 2; // v3
+				return(clean_exit(data)); // v2
 			}
 			i++;
 		}
@@ -402,7 +406,11 @@ int	ft_exit(char **args, t_data *data)
 			exit_code = 256 + exit_code;
 		else if (exit_code > 255)
 			exit_code = exit_code % 256;
-		exit(exit_code);
+		//exit(exit_code);
+		//data->exit_status = exit_code; // v2
+		global_var = exit_code; // v3
+		return(clean_exit(data)); // v2
 	}
-	exit(data->exit_status);
+	//exit(data->exit_status);
+	return(clean_exit(data)); // v2
 }

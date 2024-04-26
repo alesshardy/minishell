@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/25 17:36:21 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/26 15:52:08 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,11 +96,10 @@ typedef struct s_data
 	char	**env_array;
 	char	*prompt;
 	t_token	*tokens;
+	t_token	*first_token;
 	t_ast	*ast;
 	t_ast	*first_redir_out;
 	size_t	token_count;
-	int		count_redir_in; // a voir si utile
-	int		count_redir_out; // a voir si utile
 	int		exit_status;
 	int		here_doc_fd;
 	}	t_data;
@@ -153,6 +152,7 @@ t_ast	*parse_command(t_token **tokens);
 t_ast	*parse_redirection(t_token **tokens);
 t_ast	*parse_pipe(t_token **tokens);
 t_ast	*parse_tokens(t_token **tokens);
+void	free_ast(t_ast *ast);
 
 /*adjust*/
 int		is_white_space(char *str);
@@ -208,5 +208,9 @@ void	delete_tmp_files(void);
 
 /*dollar handler*/
 void	redefine_dollar(t_token **tokens, t_env *env);
+
+/*cleanning*/
+int	clean_exit(t_data *data);
+void	ft_free_data(t_data *data);
 
 #endif

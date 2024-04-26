@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 16:15:43 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/25 17:33:10 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/26 17:48:02 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,6 +271,7 @@ char	*remove_outer_quotes(char *word)
 		i++;
 	}
 	new_word[j] = '\0';
+	//free(word);//free the old word
 	return (new_word);
 }
 

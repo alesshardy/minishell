@@ -1,0 +1,7 @@
+{
+    _readline_
+        Memcheck:Leak
+        match-leak-kinds: all
+        ...
+        fun:readline
+}

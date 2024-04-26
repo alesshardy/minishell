@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/17 11:36:41 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/24 17:47:59 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/26 16:22:12 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,22 @@
 void	delete_tmp_files(void)
 {
 	int i;
+	char *tmp_itoa;
 	char *filename;
 
 	i = 1;
 	while (1)
 	{
-		filename = ft_strjoin(HERE_DOC_FILE, ft_itoa(i));
+		tmp_itoa = ft_itoa(i);
+		filename = ft_strjoin(HERE_DOC_FILE, tmp_itoa);
 		if (access(filename, F_OK) == -1) // If the file does not exist
+		{
+			free(tmp_itoa);
+			free(filename);
 			break;
+		}
 		unlink(filename); // Delete the file
+		free(tmp_itoa);
 		free(filename);
 		i++;
 	}
