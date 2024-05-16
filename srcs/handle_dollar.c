@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_dollar.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
+/*   By: kammi <kammi@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/22 17:10:15 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/25 18:19:03 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/06 15:24:35 by kammi            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ char	*expand_env(char *line, t_env *env)
 			if (line[start] == '?') // si la variable est $?
 			{
 				env_value = ft_itoa(global_var);
-				printf("env_value = %s\n", env_value);
+				//printf("env_value = %s\n", env_value);
 				i++; // on incrémente i pour ne pas prendre le ?
 			}
 			else
@@ -82,7 +82,7 @@ char	*expand_env(char *line, t_env *env)
 	}
 	new_line[j] = '\0';
 	return (new_line);
-}
+}// cette fonction remplace les variables d'environnement par leur valeur
 
 int	has_dollar(char *line)
 {

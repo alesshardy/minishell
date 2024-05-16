@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/03 18:33:28 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/26 16:57:08 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/16 14:40:52 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ int		ft_cd(char **args, t_data *data)
 		if (chdir(get_var_value(data, "HOME")) == -1)
 		{
 			ft_putstr_fd("minishell: cd: HOME not set\n", 2);
+			global_var = 1;
 			return (1);
 		}
 	}
@@ -95,12 +96,14 @@ int		ft_cd(char **args, t_data *data)
 			ft_putstr_fd(": ", 2);
 			ft_putstr_fd(strerror(errno), 2);
 			ft_putstr_fd("\n", 2);
+			global_var = 1;
 			return (1);
 		}
 	}
 	else
 	{
 		ft_putstr_fd("minishell: cd: too many arguments\n", 2);
+		global_var = 1;
 		return (1);
 	}
 	cwd = static_cwd(UPDATE);
@@ -134,7 +137,8 @@ char	*static_cwd(int action)
 	}
 	else if (!cwd || action == UPDATE)
 	{
-		free(cwd);
+		if (cwd)
+			free(cwd);
 		cwd = NULL;
 		cwd = getcwd(cwd, 0);
 	}
@@ -144,10 +148,21 @@ char	*static_cwd(int action)
 int	ft_pwd(void)
 {
 	char	*cwd;
+	struct stat	st;
 
 	cwd = static_cwd(NOTHING);
 	if (!cwd)
 		return (1);
+	if (stat(cwd, &st) != 0)
+	{
+		ft_putstr_fd("minishell: pwd: ", 2);
+		ft_putstr_fd("error retrieving current directory: ", 2);
+		ft_putstr_fd("getcwd: cannot access parent directories: ", 2);
+		ft_putstr_fd(strerror(errno), 2);
+		ft_putstr_fd("\n", 2);
+		return (1);
+	}
+
 	printf("%s\n", cwd);
 	return (0);
 }
@@ -172,29 +187,43 @@ char	*get_pwd(void)
 
 /***************************************EXPORT**************************************/
 
+int	is_valid_var_name(char *var)
+{
+	int	i;
+
+	if (!var || !*var || ft_isdigit(*var)) // Les noms de variables ne peuvent pas commencer par un chiffre
+		return (0);
+	i = 0;
+	while (var[i])
+	{
+		if (!ft_isalnum(var[i]) && var[i] != '_') // Les noms de variables ne peuvent contenir que des caractères alphanumériques et des soulignements
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 int	add_env_var(t_data *data, char *var)
 {
 	t_env	*env;
 	t_env	*tmp;
 	char	*name;
 	char	*value;
+	char	*equal_sign;
 
-	name = ft_substr(var, 0, ft_strchr(var, '=') - var);
+	equal_sign = ft_strchr(var, '=');
+	name = ft_substr(var, 0, equal_sign - var);
 	if (!name)
 		return (1);
-	value = ft_strdup(ft_strchr(var, '=') + 1);
-	if (!value)
-	{
-		free(name);
-		return (1);
-	}
+	if (equal_sign) // Check if there is an equal sign in var
+		value = ft_strdup(equal_sign + 1);
+	else
+		value = NULL; // If there is no equal sign, set value to NULL
+	if (!value && equal_sign) // If strdup failed and there was an equal sign
+		return (free(name), 1);
 	env = new_env_node(name, value, 1);
 	if (!env)
-	{
-		free(name);
-		free(value);
-		return (1);
-	}
+		return (free(name), free(value), 1);
 	tmp = data->env;
 	while (tmp->next)
 		tmp = tmp->next;
@@ -202,6 +231,36 @@ int	add_env_var(t_data *data, char *var)
 	env->prev = tmp;
 	return (0);
 }
+// int	add_env_var(t_data *data, char *var)
+// {
+// 	t_env	*env;
+// 	t_env	*tmp;
+// 	char	*name;
+// 	char	*value;
+
+// 	name = ft_substr(var, 0, ft_strchr(var, '=') - var);
+// 	if (!name)
+// 		return (1);
+// 	value = ft_strdup(ft_strchr(var, '=') + 1);
+// 	if (!value)
+// 	{
+// 		free(name);
+// 		return (1);
+// 	}
+// 	env = new_env_node(name, value, 1);
+// 	if (!env)
+// 	{
+// 		free(name);
+// 		free(value);
+// 		return (1);
+// 	}
+// 	tmp = data->env;
+// 	while (tmp->next)
+// 		tmp = tmp->next;
+// 	tmp->next = env;
+// 	env->prev = tmp;
+// 	return (0);
+// }
 
 static char	**duplicate_env(t_data *data)
 {
@@ -274,6 +333,52 @@ static int	ft_export_no_args(t_data *data)
 	free(names);
 	return (0);
 }
+// int	ft_export(char **args, t_data *data)
+// {
+// 	int		i;
+// 	char	*tmp;
+// 	t_env	*env;
+
+// 	if (!args[1])
+// 		return (ft_export_no_args(data));
+// 	i = 1;
+// 	while (args[i])
+// 	{
+// 		if (ft_strchr(args[i], '='))
+// 		{
+// 			tmp = ft_substr(args[i], 0, ft_strchr(args[i], '=') - args[i]);
+// 			if (!tmp)
+// 				return (1);
+// 			env = get_env_var(data, tmp);
+// 			if (env)
+// 			{
+// 				free(env->value);
+// 				env->value = ft_strdup(ft_strchr(args[i], '=') + 1);
+// 			}
+// 			else
+// 				add_env_var(data, args[i]);
+// 			free(tmp);
+// 		}
+// 		else
+// 		{
+// 			env = get_env_var(data, args[i]);
+// 			if (env)
+
+// 				env->value = NULL;
+// 			else
+// 			{
+// 				// Ajoutez une vérification ici pour vous assurer que add_env_var a réussi
+// 				if (add_env_var(data, args[i]) != 0)
+// 				{
+// 					return (1);
+// 				}
+// 			}
+// 		}
+// 		i++;
+// 	}
+// 	return (0);
+// }
+
 int	ft_export(char **args, t_data *data)
 {
 	int		i;
@@ -288,8 +393,15 @@ int	ft_export(char **args, t_data *data)
 		if (ft_strchr(args[i], '='))
 		{
 			tmp = ft_substr(args[i], 0, ft_strchr(args[i], '=') - args[i]);
-			if (!tmp)
+			if (!tmp || !is_valid_var_name(tmp))
+			{
+				free(tmp);
+				ft_putstr_fd("minishell: export: `", 2);
+				ft_putstr_fd(args[i], 2);
+				ft_putstr_fd("': not a valid identifier\n", 2);
+				global_var = 1;
 				return (1);
+			}
 			env = get_env_var(data, tmp);
 			if (env)
 			{
@@ -302,13 +414,19 @@ int	ft_export(char **args, t_data *data)
 		}
 		else
 		{
+			if (!is_valid_var_name(args[i]))
+			{
+				ft_putstr_fd("minishell: export: `", 2);
+				ft_putstr_fd(args[i], 2);
+				ft_putstr_fd("': not a valid identifier\n", 2);
+				global_var = 1;
+				return (1);
+			}
 			env = get_env_var(data, args[i]);
 			if (env)
-
 				env->value = NULL;
 			else
 			{
-				// Ajoutez une vérification ici pour vous assurer que add_env_var a réussi
 				if (add_env_var(data, args[i]) != 0)
 				{
 					return (1);
@@ -380,7 +498,7 @@ int	ft_exit(char **args, t_data *data)
 	i = 0;
 	if (args[1])
 	{
-		if (args[1][0] == '-')
+		if (args[1][0] == '-' || args[1][0] == '+')
 			i = 1;
 		while (args[1][i])
 		{
@@ -399,6 +517,7 @@ int	ft_exit(char **args, t_data *data)
 		if (args[2])
 		{
 			ft_putstr_fd("minishell: exit: too many arguments\n", 2);
+			global_var = 1;
 			return (1);
 		}
 		exit_code = ft_atoi(args[1]);

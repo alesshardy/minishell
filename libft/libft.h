@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 17:11:40 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/26 16:23:53 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/15 16:27:34 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,8 @@ size_t	ft_strlen(const char *s);
 void	*ft_memset(void *s, int c, size_t n);
 void	ft_bzero(void *s, size_t n);
 void	*ft_memcpy(void *dest, const void *src, size_t n);
-void	*ft_realloc(void *ptr, size_t newsize);
+//void	*ft_realloc(void *ptr, size_t size); // old
+void	*ft_realloc(void *ptr, size_t old_size, size_t new_size);
 void	*ft_memmove(void *dest, const void *src, size_t n);
 char	*ft_strncpy(char *dst, const char *src, size_t len);
 size_t	ft_strlcpy(char *dst, const char *src, size_t size);

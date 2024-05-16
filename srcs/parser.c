@@ -3,40 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
+/*   By: kammi <kammi@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 14:43:09 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/26 17:51:03 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/02 12:04:27 by kammi            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-t_ast	*create_ast(t_token *token)
-{
-	t_ast	*node;
-
-	node = malloc(sizeof(t_ast));
-	if (node == NULL)
-		return (NULL);
-	node->type = token->type;
-	node->args = malloc(sizeof(char *) * MAX_ARGS); // Allocate memory for args
-	node->args[0] = token->value; // The first argument is the command itself
-	node->args[1] = NULL; // Initialize the rest of the args array to NULL
-	node->left = NULL;
-	node->right = NULL;
-	return (node);
-}
-
-void	free_ast(t_ast *ast)
-{
-	if (ast == NULL)
-		return ;
-	free_ast(ast->left);
-	free_ast(ast->right);
-	free(ast->args); // Free the args array
-	free(ast);
-}
 
 t_ast	*parse_word(t_token **tokens)
 {
@@ -69,52 +43,7 @@ t_ast	*parse_command(t_token **tokens)
 	}
 	return (node);
 }
-//je sais plus quel version mais garder pour l instant
-/* t_ast	*parse_redirection(t_token **tokens)
-{
-	t_ast	*node;
-	t_ast	*redir;
 
-	node = parse_command(tokens);
-	while (*tokens != NULL && ((*tokens)->type == REDIR_IN
-			|| (*tokens)->type == REDIR_OUT || (*tokens)->type == REDIR_APPEND
-			|| (*tokens)->type == REDIR_HEREDOC))
-	{
-		redir = create_ast(*tokens);
-		redir->left = node;
-		*tokens = (*tokens)->next;
-		redir->right = parse_command(tokens);
-		node = redir;
-	}
-	return (node);
-} */
-//V1
-// t_ast	*parse_redirection(t_token **tokens)    // This is the original function astV1
-// {
-//     t_ast	*node;
-//     t_ast	*redir;
-
-//     node = parse_command(tokens);
-//     while (*tokens != NULL && ((*tokens)->type == REDIR_IN
-//             || (*tokens)->type == REDIR_OUT || (*tokens)->type == REDIR_APPEND
-//             || (*tokens)->type == REDIR_HEREDOC))
-//     {
-//         redir = create_ast(*tokens);
-//         redir->left = node;
-//         *tokens = (*tokens)->next;
-//         if (*tokens == NULL || ((*tokens)->type != INFILE && (*tokens)->type != OUTFILE))
-//         {
-//             fprintf(stderr, "Error: expected a filename after redirection\n");
-//             free_ast(redir);
-//             return (NULL);
-//         }
-//         redir->right = parse_command(tokens);
-//         node = redir;
-//     }
-//     return (node);
-// }
-
-//VC LA BONNE JE CROIS
 t_ast	*parse_redirection(t_token **tokens)
 {
 	t_ast	*node;
@@ -127,66 +56,49 @@ t_ast	*parse_redirection(t_token **tokens)
 			|| (*tokens)->type == REDIR_OUT || (*tokens)->type == REDIR_APPEND
 			|| (*tokens)->type == REDIR_HEREDOC))
 	{
-		redir = create_ast(*tokens);
-		*tokens = (*tokens)->next;
-		if (*tokens == NULL || ((*tokens)->type != INFILE && (*tokens)->type != OUTFILE))
-		{
-			fprintf(stderr, "Error: expected a filename after redirection\n");
-			free_ast(redir);
-			return (NULL);
-		}
-		redir->right = parse_command(tokens);
-		if (last_redir == NULL)
-		{
-			redir->left = node;
-			node = redir;
-		}
-		else
-		{
-			redir->left = last_redir->left;
-			last_redir->left = redir;
-		}
+		redir = create_redir_node(tokens);
+		if (redir == NULL)
+			return NULL;
+		node = add_redir_node_to_ast(node, redir, last_redir);
 		last_redir = redir;
 	}
 	return (node);
 }
+// t_ast	*parse_redirection(t_token **tokens)
+// {
+// 	t_ast	*node;
+// 	t_ast	*redir;
+// 	t_ast	*last_redir;
 
-//astV2 redir_out on  the left
-/* t_ast	*parse_redirection(t_token **tokens)
-{
-    t_ast	*node;
-    t_ast	*redir;
-    t_ast	*last_redir;
-
-    node = parse_command(tokens);
-    last_redir = NULL;
-    while (*tokens != NULL && ((*tokens)->type == REDIR_IN
-            || (*tokens)->type == REDIR_OUT || (*tokens)->type == REDIR_APPEND
-            || (*tokens)->type == REDIR_HEREDOC))
-    {
-        redir = create_ast(*tokens);
-        *tokens = (*tokens)->next;
-        if (*tokens == NULL || ((*tokens)->type != INFILE && (*tokens)->type != OUTFILE))
-        {
-            fprintf(stderr, "Error: expected a filename after redirection\n");
-            free_ast(redir);
-            return (NULL);
-        }
-        redir->left = parse_command(tokens);
-        if (last_redir == NULL)
-        {
-            redir->right = node;
-            node = redir;
-        }
-        else
-        {
-            redir->right = last_redir->right;
-            last_redir->right = redir;
-        }
-        last_redir = redir;
-    }
-    return (node);
-} */
+// 	node = parse_command(tokens);
+// 	last_redir = NULL;
+// 	while (*tokens != NULL && ((*tokens)->type == REDIR_IN
+// 			|| (*tokens)->type == REDIR_OUT || (*tokens)->type == REDIR_APPEND
+// 			|| (*tokens)->type == REDIR_HEREDOC))
+// 	{
+// 		redir = create_ast(*tokens);
+// 		*tokens = (*tokens)->next;
+// 		if (*tokens == NULL || ((*tokens)->type != INFILE && (*tokens)->type != OUTFILE))
+// 		{
+// 			fprintf(stderr, "Error: expected a filename after redirection\n");
+// 			free_ast(redir);
+// 			return (NULL);
+// 		}
+// 		redir->right = parse_command(tokens);
+// 		if (last_redir == NULL)
+// 		{
+// 			redir->left = node;
+// 			node = redir;
+// 		}
+// 		else
+// 		{
+// 			redir->left = last_redir->left;
+// 			last_redir->left = redir;
+// 		}
+// 		last_redir = redir;
+// 	}
+// 	return (node);
+// }
 
 
 t_ast	*parse_pipe(t_token **tokens)

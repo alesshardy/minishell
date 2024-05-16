@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/17 16:20:17 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/24 15:26:23 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/15 16:58:06 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,15 +103,16 @@ void	move_arg(t_ast *node)
 		arg_count_right = 0;
 		while (node->right->args[arg_count_right] != NULL)
 			arg_count_right++;
-		printf("arg_count_right = %d\n", arg_count_right);	//fdebug
+		//printf("arg_count_right = %d\n", arg_count_right);	//fdebug
 
 		// Compter le nombre d'arguments dans le noeud de gauche
 		arg_count_left = 0;
 		while (node->left->args[arg_count_left] != NULL)
 			arg_count_left++;
-		printf("arg_count_left = %d\n", arg_count_left);	//fdebug
+		//printf("arg_count_left = %d\n", arg_count_left);	//fdebug
 		// Allouer un nouveau tableau pour les arguments du noeud de gauche
-		node->left->args = realloc(node->left->args, sizeof(char*) * (arg_count_left + arg_count_right + 1));
+		// node->left->args = ft_realloc(node->left->args, sizeof(char*) * (arg_count_left + arg_count_right + 1)); // ancienne v de realloc
+		node->left->args = ft_realloc(node->left->args, sizeof(char*) * arg_count_left, sizeof(char*) * (arg_count_left + arg_count_right + 1));
 
 		arg_count_right--; // On ne copie pas le premier argument du noeud de droite
 		// Copier les arguments du noeud de droite vers le noeud de gauche
@@ -120,7 +121,7 @@ void	move_arg(t_ast *node)
 		{
 			// Supprimer les guillemets extérieurs de l'argument
 			new_arg = cleaner_quotes_arg(node->right->args[i + 1]);
-			printf("new_arg = %s\n", new_arg);	//fdebug
+			//printf("new_arg = %s\n", new_arg);	//fdebug
 			//new_arg = node->right->args[i + 1];
 			node->left->args[arg_count_left + i] = new_arg;
 			i++;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env_utils.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
+/*   By: kammi <kammi@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/22 14:00:25 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/26 17:52:41 by apintus          ###   ########.fr       */
+/*   Updated: 2024/04/29 16:14:20 by kammi            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,10 +58,11 @@ char	*get_cmd_path(char **envp, char *cmd)
 			path = ft_find_path(split, cmd);
 			if (path)
 				return (path);
+			break ;
 		}
 		i++;
 	}
-	return (cmd); //modif pour retourne la commande mauvaise si rien de trouver
+	return (ft_strdup(cmd)); //modif pour retourne la commande mauvaise si rien de trouver
 }
 
 char	**get_env_array(t_env *env)
@@ -69,6 +70,7 @@ char	**get_env_array(t_env *env)
 	char	**env_array;
 	int		i;
 	t_env	*head;
+	char	*tmp;
 
 	head = env;
 	i = 0;
@@ -85,8 +87,9 @@ char	**get_env_array(t_env *env)
 	env = head;
 	while (env)
 	{
-		env_array[i] = ft_strjoin(env->name, "=");
-		env_array[i] = ft_strjoin(env_array[i], env->value);
+		tmp = ft_strjoin(env->name, "=");
+		env_array[i] = ft_strjoin(tmp, env->value);
+		free(tmp);
 		i++;
 		env = env->next;
 	}

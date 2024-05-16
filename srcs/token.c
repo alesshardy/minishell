@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 16:15:43 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/26 17:48:02 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/16 12:23:32 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,55 +14,9 @@
 
 /***************************************utiles token **************************************************/
 
-void	free_tokens(t_token *tokens)
-{
-	t_token	*tmp;
-
-	while (tokens != NULL)
-	{
-		tmp = tokens;
-		tokens = tokens->next;
-		free(tmp->value);
-		free(tmp);
-	}
-}
-
-void	add_token(t_token **tokens, t_token *new_token)
-{
-	t_token	*last;
-
-	if (!*tokens)
-	{
-		*tokens = new_token;
-		return ;
-	}
-	last = *tokens;
-	while (last->next)
-		last = last->next;
-	last->next = new_token;
-	new_token->prev = last;
-}
 
 
-t_token	*new_token(char *value, t_token_type type)
-{
-	t_token	*new_token;
 
-	new_token = malloc(sizeof(t_token));
-	if (!new_token)
-		return (NULL);
-	new_token->value = value;
-	new_token->type = type;
-	if (!new_token->value)
-	{
-		free(new_token);
-		return (NULL);
-	}
-	new_token->next = NULL;
-	new_token->prev = NULL;
-	return (new_token);
-
-}
 
 // t_token	*create_token(char *value, t_token_type type)
 // {
@@ -97,8 +51,8 @@ void	redefine_word_token(t_token *tokens)
 				token->type = OUTFILE;
 			else if (token->prev && token->prev->type == REDIR_HEREDOC)
 				token->type = LIMITER;
-			/*else if (token->prev && token->prev->type == ENV_VAR)
-				token->type = ARG;*/
+			/* else if (token->prev && token->prev->type == ENV_VAR)
+				token->type = ARG; */
 			else
 				token->type = CMD;
 		}
@@ -121,6 +75,7 @@ void	redefine_cmd_token(t_token *tokens)
 		token = token->next;
 	}
 }
+
 
 /***************************************tokenizer**************************************************/
 
@@ -154,23 +109,7 @@ void	handle_redirection(char **input, t_token **tokens)
 
 //handle word
 
-void	add_word_token(char **start, char **input, t_token **tokens)
-{
-	char	*word;
 
-	if (*input > *start)
-	{
-		word = ft_substr(*start, 0, *input - *start);
-		//printf("word: %s\n", word); // debug
-		if (word)
-		{
-			add_token(tokens, new_token(strdup(word), WORD));
-			free(word);
-		}
-		else
-			ft_putstr_fd("Error: malloc failed\n", 2);
-	}
-}
 
 void	handle_word(char **input, t_token **tokens)
 {
@@ -248,53 +187,10 @@ void	remove_empty_quotes_from_tokens(t_token *tokens)
 	}
 } */
 //remove outer quotes from tokens
-char	*remove_outer_quotes(char *word)
-{
-	int		length;
-	char	*new_word;
-	int		i = 0;
-	int		j = 0;
-	char	in_quotes = 0;
 
-	length = ft_strlen(word);
-	new_word = malloc(length + 1);
-	if (new_word == NULL)
-		return (NULL);
-	while (i < length)
-	{
-		if ((word[i] == '\'' || word[i] == '\"') && !in_quotes)
-			in_quotes = word[i];
-		else if (word[i] == in_quotes)
-			in_quotes = 0;
-		else
-			new_word[j++] = word[i];
-		i++;
-	}
-	new_word[j] = '\0';
-	//free(word);//free the old word
-	return (new_word);
-}
-
-void remove_outer_quotes_from_tokens(t_token *tokens)
-{
-	t_token	*current;
-	char	*new_word;
-
-	current = tokens;
-	while (current != NULL)
-	{
-		if (current->type == ARG || current->type == OUTFILE || current->type == INFILE)
-		{
-			new_word = remove_outer_quotes(current->value);
-			free(current->value);
-			current->value = new_word;
-		}
-		current = current->next;
-	}
-}
 
 //main tokenizer
-t_token	*tokenizer(char *input, t_data *data)
+t_token	*tokenizer(char *input, t_data *data, bool expand)
 {
 	t_token	*tokens;
 
@@ -311,17 +207,27 @@ t_token	*tokenizer(char *input, t_data *data)
 		while ((*input) && (*input == ' ' || *input == '\t'
 					|| *input == '\n' || *input == '\v' || *input == '\f' || *input == '\r'))
 				input++;
+		if (*input == '\0') // Ajout de cette vérification
+			break;
 		if (ft_strchr("><|", *input))
 			handle_redirection(&input, &tokens);
 		else
 			handle_word(&input, &tokens);
+		// if (*input == '\0') // Ajout de cette vérification
+		// 	break;
 	}
-	display_tokens(tokens);
-	printf("			REDEFINE\n");
-	redefine_dollar(&tokens, data->env);
-	//remove_empty_quotes_from_tokens(tokens); // inuliser pour le moment wtf
+	//display_tokens(tokens);
+	if (expand)
+	{
+		//printf("redefine dollar\n");
+		redefine_dollar(&tokens, data->env, data);
+	}
+	//printf("redefine dollar\n");
+	//display_tokens(tokens);
 	redefine_word_token(tokens);
 	redefine_cmd_token(tokens);
 	remove_outer_quotes_from_tokens(tokens);
+	//printf("redefine dollar\n");
+	//display_tokens(tokens);
 	return (tokens);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   check_input.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
+/*   By: kammi <kammi@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/21 15:31:27 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/02 13:59:59 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/10 11:53:55 by kammi            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,8 +137,8 @@ int	check_input(char *line)
 	if (logical_operator(line) == 1)
 		return (ft_putstr_fd("Error: Logical operators '&&' and '||' and ';' are not supported.\n", 2), 1);
 	if (misplace_operator(line) == 1)
-		return (ft_putstr_fd("Error: Misplaced operator\n", 2), 1);
+		return (ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2), 1);
 	if (misplace_redirection(line) == 1)
-		return (ft_putstr_fd("Error: Misplaced redirection\n", 2), 1);
+		return (ft_putstr_fd("minishell: syntax error near unexpected token `newline'\n", 2), 1);
 	return (0);
 }

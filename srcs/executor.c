@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/26 18:10:14 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/16 14:29:59 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,59 +138,176 @@ char	*remove_quotes_file(char *str)
 }
 
 /*************************************EXEC*************************************/
+void	close_all_fds()
+{
+	int i;
+
+	i = 3;
+	while (i < 1024)
+	{
+		close(i);
+		i++;
+	}
+}
+// void	exec_child_process(char **args, char *cmd, char **env_array)
+// {
+// 	close_all_fds();
+// 	if (execve(cmd, args, env_array) == -1)
+// 	{
+// 		ft_putstr_fd("minishell:", 2);
+// 		ft_putstr_fd(args[0], 2);
+// 		ft_putstr_fd(": ", 2);
+// 		if (errno ==ENOENT)
+// 		{
+// 			ft_putstr_fd("Command not found", 2);
+// 			exit(127);
+// 		}
+// 		else if (errno == EACCES)
+// 		{
+// 			ft_putstr_fd("Permission denied\n", 2);
+// 			exit(126);
+// 		}
+// 		else
+// 			ft_putstr_fd(strerror(errno), 2);
+// 		ft_putstr_fd("\n", 2);
+// 		exit(1);
+// 	}
+// }
+
+void	exec_child_process(char **args, char *cmd, char **env_array)
+{
+	struct stat st;
+
+	close_all_fds();
+	if (stat(cmd, &st) == 0)
+	{
+		if (S_ISDIR(st.st_mode))
+		{
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(args[0], 2);
+			ft_putstr_fd(": Is a directory\n", 2);
+			exit(126);
+		}
+		else if ((st.st_mode & S_IXUSR) == 0)
+		{
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(args[0], 2);
+			ft_putstr_fd(": Command not found\n", 2);
+			exit(127);
+		}
+	}
+	if (execve(cmd, args, env_array) == -1)
+	{
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(args[0], 2);
+		ft_putstr_fd(": ", 2);
+		if (errno == ENOENT)
+		{
+			ft_putstr_fd("Command not found\n", 2);
+			exit(127);
+		}
+		else if (errno == EACCES)
+		{
+			ft_putstr_fd("Permission denied\n", 2);
+			exit(126);
+		}
+		else
+		{
+			ft_putstr_fd(strerror(errno), 2);
+			ft_putstr_fd("\n", 2);
+			exit(1);
+		}
+	}
+}
 
 void	ft_exec(t_data *data, char **args)
 {
 	pid_t	pid;
 	char	*cmd;
-	char	**env_array;
 	int		status;
-
-	signal(SIGINT, SIG_DFL);  // Reset to default behavior
-	signal(SIGQUIT, SIG_DFL);  // Reset to default behavior
 
 	args[0] = remove_outer_quotes(args[0]);
 	args[0] = check_cmd_quotes(args[0]);
-
-	env_array = get_env_array(data->env);
-
-	cmd = get_cmd_path(env_array, args[0]);
-
+	data->env_array = get_env_array(data->env);
+	cmd = get_cmd_path(data->env_array, args[0]);
 	pid = fork();
+	signal(SIGINT, child_ctrl_c);
+	signal(SIGQUIT, child_ctrl_c);
 	if (pid == 0)
-	{
-		if (execve(cmd, args, env_array) == -1)
-		{
-			ft_putstr_fd("minishell:", 2);
-			ft_putstr_fd(args[0], 2);
-			ft_putstr_fd(": ", 2);
-			if (errno ==ENOENT)
-			{
-				ft_putstr_fd("Command not found", 2);
-				exit(127);
-			}
-			else if (errno == EACCES)
-			{
-				ft_putstr_fd("Permission denied\n", 2);
-				exit(126);
-			}
-			else
-				ft_putstr_fd(strerror(errno), 2);
-			ft_putstr_fd("\n", 2);
-			exit(1);
-		}
-	}
+		exec_child_process(args, cmd, data->env_array);
 	else
 	{
-		free_array(env_array); //ajout pour free env_array
+		free_array(data->env_array); //ajout pour free env_array
 		free(cmd); //ajout pour free cmd
-		//free_array(args);//ajout pour free args
+		free(args[0]); //ajout pour free args[0]
 		waitpid(pid, &status, 0);
-		global_var = status >> 8;
+		if (WIFEXITED(status))
+			global_var = WEXITSTATUS(status);
+		else if (WIFSIGNALED(status))
+			global_var = 128 + WTERMSIG(status);
 	}
-
 	signal(SIGINT, ctrl_c_handler);  // Restore signal handlers
-	signal(SIGQUIT, handle_sigquit);  // Restore signal handlers
+	signal(SIGQUIT, SIG_IGN);  // Restore signal handlers
+}
+// void	ft_exec(t_data *data, char **args)
+// {
+// 	pid_t	pid;
+// 	char	*cmd;
+// 	int		status;
+
+// 	//signal(SIGINT, SIG_DFL);  // Reset to default behavior
+// 	//signal(SIGQUIT, SIG_DFL);  // Reset to default behavior
+
+// 	args[0] = remove_outer_quotes(args[0]);
+// 	args[0] = check_cmd_quotes(args[0]);
+
+// 	data->env_array = get_env_array(data->env);
+
+// 	cmd = get_cmd_path(data->env_array, args[0]);
+
+// 	pid = fork();
+// 	if (pid == 0)
+// 	{
+// 		if (execve(cmd, args, data->env_array) == -1)
+// 		{
+// 			ft_putstr_fd("minishell:", 2);
+// 			ft_putstr_fd(args[0], 2);
+// 			ft_putstr_fd(": ", 2);
+// 			if (errno ==ENOENT)
+// 			{
+// 				ft_putstr_fd("Command not found", 2);
+// 				exit(127);
+// 			}
+// 			else if (errno == EACCES)
+// 			{
+// 				ft_putstr_fd("Permission denied\n", 2);
+// 				exit(126);
+// 			}
+// 			else
+// 				ft_putstr_fd(strerror(errno), 2);
+// 			ft_putstr_fd("\n", 2);
+// 			exit(1);
+// 		}
+// 	}
+// 	else
+// 	{
+// 		free_array(data->env_array); //ajout pour free env_array
+// 		free(cmd); //ajout pour free cmd
+// 		free(args[0]); //ajout pour free args[0]
+// 		waitpid(pid, &status, 0);
+// 		global_var = status >> 8;
+// 	}
+
+// 	signal(SIGINT, ctrl_c_handler);  // Restore signal handlers
+// 	signal(SIGQUIT, handle_sigquit);  // Restore signal handlers
+// }
+void	pipe_child_process(t_data *data, t_ast *ast, int fd[2], int end)
+{
+	dup2(fd[end], end);
+	close(fd[0]);
+	close(fd[1]);
+	executor(data, ast);
+	exit(0);
 }
 
 void	ft_pipeline(t_data *data, t_ast *ast)
@@ -202,26 +319,14 @@ void	ft_pipeline(t_data *data, t_ast *ast)
 
 	pipe(fd);
 	pid = fork();
-	if (pid == 0) //child
-	{
-		dup2(fd[1], 1);
-		close(fd[0]);
-		close(fd[1]);
-		executor(data, ast->left);
-		exit(0);
-	}
-	else //parent
+	if (pid == 0)
+		pipe_child_process(data, ast->left, fd, 1);
+	else
 	{
 		pid2 = fork();
-		if (pid2 == 0) //child
-		{
-			dup2(fd[0], 0);
-			close(fd[0]);
-			close(fd[1]);
-			executor(data, ast->right);
-			exit(0);
-		}
-		else //parent
+		if (pid2 == 0)
+			pipe_child_process(data, ast->right, fd, 0);
+		else
 		{
 			close(fd[0]);
 			close(fd[1]);
@@ -233,92 +338,47 @@ void	ft_pipeline(t_data *data, t_ast *ast)
 	}
 }
 
-//ancienne version
-/* void	ft_exec(t_data *data, char **args)
-{
-	pid_t	pid;
-	int		status;
-	char	*cmd;
-	char	**env_array;
-	int		i; //a suprrimer si aps laissezla boucle
+// void	ft_pipeline(t_data *data, t_ast *ast)
+// {
+// 	int		fd[2];
+// 	pid_t	pid;
+// 	pid_t	pid2;
+// 	int		status;
 
+// 	pipe(fd);
+// 	pid = fork();
+// 	if (pid == 0) //child
+// 		{
+// 			dup2(fd[1], 1);
+// 			close(fd[0]);
+// 			close(fd[1]);
+// 			executor(data, ast->left);
+// 			exit(0);
+// 		}
+// 	else //parent
+// 	{
+// 		pid2 = fork();
+// 		if (pid2 == 0) //child
+// 		{
+// 			dup2(fd[0], 0);
+// 			close(fd[0]);
+// 			close(fd[1]);
+// 			executor(data, ast->right);
+// 			exit(0);
+// 		}
+// 		else //parent
+// 		{
+// 			close(fd[0]);
+// 			close(fd[1]);
+// 			waitpid(pid, &status, 0);
+// 			global_var = status >> 8;
+// 			waitpid(pid2, &status, 0);
+// 			global_var = status >> 8;
+// 		}
+// 	}
+// }
 
-	signal(SIGINT, SIG_DFL);  // Reset to default behavior
-	signal(SIGQUIT, SIG_DFL);  // Reset to default behavior
-	i = 0;
-	printf("PRECLEAN\n");
-	printf("args[0] = %s\n", args[0]);
-	args[0] = remove_outer_quotes(args[0]);
-	printf("args[0] = %s\n", args[0]);
-	args[0] = check_cmd_quotes(args[0]);
-	// while(args[i])
-	// {
-	// 	//ft_putendl_fd(args[i], 2); //fdebug
-	// 	args[i] = check_cmd_quotes(args[i]); //faut je verif si on est dans un ARG ou CMD
-	// 	printf("args[%d] = %s\n", i, args[i]); //fdebug
-	// 	i++;
-	// }
-
-	env_array = get_env_array(data->env);
-
-	cmd = get_cmd_path(env_array, args[0]);
-	//ft_putendl_fd("je suis dans ft_exec", 2);//fdebug
-	//printf("cmd = %s\n", cmd);//fdebug
-	pid = fork();
-	if (pid == 0)
-	{
-		if (execve(cmd, args, env_array) == -1)
-		{
-			ft_putstr_fd("minishell:", 2);
-			ft_putstr_fd(args[0], 2);
-			ft_putstr_fd(": ", 2);
-			if (errno ==ENOENT)
-				ft_putstr_fd("command not found", 2);
-			else
-				ft_putstr_fd(strerror(errno), 2);
-			ft_putstr_fd("\n", 2);
-			exit(1);
-		}
-	}
-	else
-		waitpid(pid, &status, 0);
-
-	signal(SIGINT, ctrl_c_handler);  // Restore signal handlers
-	signal(SIGQUIT, handle_sigquit);  // Restore signal handlers
-
-}
-
-void	ft_pipeline(t_data *data, t_ast *ast)
-{
-	int		fd[2];
-	pid_t	pid;
-	int		status;
-	int		saved_stdin;
-
-	saved_stdin = dup(STDIN_FILENO);  // Sauvegarder l'entrée standard
-	pipe(fd);
-	pid = fork();
-	if (pid == 0)
-	{
-		dup2(fd[1], 1);
-		close(fd[0]);
-		close(fd[1]);
-		executor(data, ast->left);
-		exit(0);
-	}
-	else
-	{
-		dup2(fd[0], 0);
-		close(fd[0]);
-		close(fd[1]);
-		waitpid(pid, &status, 0);
-		executor(data, ast->right);
-	}
-	dup2(saved_stdin, STDIN_FILENO);  // Restaurer l'entrée standard
-	close(saved_stdin);
-} */
-
-void	ft_redir_out(t_data *data, t_ast *ast)
+/* void	ft_redir_out(t_data *data, t_ast *ast)
 {
 	int		fd;
 	//int		status;
@@ -333,60 +393,59 @@ void	ft_redir_out(t_data *data, t_ast *ast)
 		fd = open(ast->right->args[0], O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd < 0)
 	{
-		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd("minishellOUT: ", 2);
 		ft_putstr_fd(ast->args[0], 2);
 		ft_putstr_fd(": ", 2);
 		ft_putstr_fd(strerror(errno), 2);
 		ft_putstr_fd("\n", 2);
+		global_var = 1;
+		close(saved_stdout);
 		return;
 	}
 	dup2(fd, STDOUT_FILENO);
 	close(fd);
 	executor(data, ast->left);
-
 	dup2(saved_stdout, STDOUT_FILENO);  // Restaurer la sortie standard
 	close(saved_stdout);
+} */
+
+void	ft_redir_out(t_data *data, t_ast *ast)
+{
+	int		fd;
+	int		saved_stdout;
+	char	*error_message = NULL;
+
+	saved_stdout = dup(STDOUT_FILENO);  // Sauvegarder la sortie standard
+
+	if (ast->type == REDIR_OUT)
+		fd = open(ast->right->args[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	else
+		fd = open(ast->right->args[0], O_WRONLY | O_CREAT | O_APPEND, 0644);
+	if (fd < 0)
+	{
+		error_message = ft_strjoin("minishell: ", ast->right->args[0]);
+		error_message = ft_strjoin(error_message, ": ");
+		error_message = ft_strjoin(error_message, strerror(errno));
+		error_message = ft_strjoin(error_message, "\n");
+		global_var = 1;
+	}
+	else
+	{
+		dup2(fd, STDOUT_FILENO);
+		close(fd);
+		executor(data, ast->left);
+		dup2(saved_stdout, STDOUT_FILENO);  // Restaurer la sortie standard
+	}
+	close(saved_stdout);
+
+	if (error_message != NULL)
+	{
+		ft_putstr_fd(error_message, 2);
+		free(error_message);
+	}
 }
 
-// V2
-//void	ft_redir_out(t_data *data, t_ast *ast)
-// {
-//     int		fd;
-//     int		saved_stdout;
-//     t_ast	*current;
-
-//     saved_stdout = dup(STDOUT_FILENO);  // Sauvegarder la sortie standard
-
-//     current = ast;
-//     while (current != NULL && (current->type == REDIR_OUT || current->type == REDIR_APPEND))
-//     {
-//         current->left->args[0] = remove_quotes_file(current->left->args[0]); // remove quotes from file name
-//         if (current->type == REDIR_OUT)
-//             fd = open(current->left->args[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-//         else
-//             fd = open(current->left->args[0], O_WRONLY | O_CREAT | O_APPEND, 0644);
-//         if (fd < 0)
-//         {
-//             ft_putstr_fd("minishell: ", 2);
-//             ft_putstr_fd(current->args[0], 2);
-//             ft_putstr_fd(": ", 2);
-//             ft_putstr_fd(strerror(errno), 2);
-//             ft_putstr_fd("\n", 2);
-//             return;
-//         }
-//         dup2(fd, STDOUT_FILENO);
-//         close(fd);
-//         current = current->right;
-//     }
-
-//     if (current != NULL && current->type == CMD)
-//         executor(data, current);
-
-//     dup2(saved_stdout, STDOUT_FILENO);  // Restaurer la sortie standard
-//     close(saved_stdout);
-// }
-
-void	ft_redir_in(t_data *data, t_ast *ast)
+/* void	ft_redir_in(t_data *data, t_ast *ast)
 {
 	int		fd;
 	//int		status;
@@ -403,6 +462,8 @@ void	ft_redir_in(t_data *data, t_ast *ast)
 		ft_putstr_fd(": ", 2);
 		ft_putstr_fd(strerror(errno), 2);
 		ft_putstr_fd("\n", 2);
+		global_var = 1;
+		close(saved_stdin);
 		return;
 	}
 	dup2(fd, STDIN_FILENO);
@@ -411,6 +472,39 @@ void	ft_redir_in(t_data *data, t_ast *ast)
 
 	dup2(saved_stdin, STDIN_FILENO);  // Restaurer l'entrée standard
 	close(saved_stdin);
+} */
+
+void	ft_redir_in(t_data *data, t_ast *ast)
+{
+	int		fd;
+	int		saved_stdin;
+	char	*error_message = NULL;
+
+	saved_stdin = dup(STDIN_FILENO);  // Sauvegarder l'entrée standard
+
+	fd = open(ast->right->args[0], O_RDONLY);
+	if (fd < 0)
+	{
+		error_message = ft_strjoin("minishell: ", ast->right->args[0]);
+		error_message = ft_strjoin(error_message, ": ");
+		error_message = ft_strjoin(error_message, strerror(errno));
+		error_message = ft_strjoin(error_message, "\n");
+		global_var = 1;
+	}
+	else
+	{
+		dup2(fd, STDIN_FILENO);
+		close(fd);
+		executor(data, ast->left);
+		dup2(saved_stdin, STDIN_FILENO);  // Restaurer l'entrée standard
+	}
+	close(saved_stdin);
+
+	if (error_message != NULL)
+	{
+		ft_putstr_fd(error_message, 2);
+		free(error_message);
+	}
 }
 
 // fonction qui gere les actions a effectuer en fonction du type de token
@@ -432,11 +526,7 @@ void	handle_redirections(t_data *data, t_ast *ast)
 void	executor(t_data *data, t_ast *ast)
 {
 	if (ast == NULL)
-	{
-		printf("Error: ast is NULL\n");
-		//data->last_exit_status = 0;
 		return;
-	}
 	if (ast->type == CMD)
 	{
 		if (ft_strncmp(ast->args[0], "echo", 4) == 0)
@@ -453,8 +543,6 @@ void	executor(t_data *data, t_ast *ast)
 			ft_env(data);
 		else if (ft_strncmp(ast->args[0], "exit", 4) == 0)
 			ft_exit(ast->args, data);
-		else if (ft_strncmp(ast->args[0], "siu", 3) == 0)
-			printf("%d\n", global_var);
 		else
 			ft_exec(data, ast->args);
 	}

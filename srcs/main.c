@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/04/26 17:43:18 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/15 17:13:00 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,17 +182,21 @@ char	*get_prompt(void)
 // }
 
 // prompt avec gestion de CTRL + D
-char	*prompt()
+char	*prompt(t_data *data)
 {
-	char	*prompt;
+	//char	*prompt;
 	char	*line;
-	prompt = get_prompt();
-	line = readline(prompt);
+	//prompt = get_prompt();
+	//line = readline(prompt);
+	line = readline(READLINE_MSG);
+	//free(prompt); //free prompt
 	//(void)data;
 	if (line == NULL)
 	{
 		printf("exit\n");
-		exit(0);
+		//free(prompt);
+		clean_exit(data);
+		//exit(0);
 	}
 	else if (line[0] == '\0' || !ft_strcmp(line, ":")
 			|| !ft_strcmp(line, "#") || !ft_strcmp(line, "!"))  // Check if the line is empty
@@ -202,71 +206,54 @@ char	*prompt()
 		if (!ft_strcmp(line, "!"))
 			global_var = 1; // retour particulier
 		free(line);
-		ft_strdup("");
+		return (ft_strdup(""));
 	}
 	add_history(line);
-	free(prompt); //free prompt
 	return (line);
 }
 
-t_data	*initialize_data()
-{
-	t_data *data = malloc(sizeof(t_data));
-	if (data != NULL)
-	{
-		data->env = NULL;
-		data->prompt = NULL;
-		data->tokens = NULL;
-		data->first_token = NULL;
-		data->token_count = 0;
-	}
-	return (data);
-}
+
 
 int	main(int ac, char **av, char **env)
 {
 	t_data	*data;
 
-	if (ac != 1)
-	{
-		printf("Error: too many arguments\n");
-		return (1);
-	}
-	(void)av;
-	signals_handler();
-	data = initialize_data();
-	//init_shell_env(data, env); //ancien env
-	data->env = init_env(data, env);
-	while (1)
-	{
-		//prompt
-		data->prompt = prompt();
-		printf("prompt : %s\n", data->prompt); //visualiser le prompt
-		//tokenize
-		data->tokens = tokenizer(data->prompt, data);
-		display_tokens(data->tokens); //visualiser les tokens
-		//handle here_doc
-		handle_here_doc(data, &data->tokens);
-		//parse
-		data->first_token = data->tokens; // pointeur sur le premier token
-		data->ast = parse_tokens(&data->tokens);
-		print_ast(data->ast, 0); //visualiser l'arbre
-		//adjust
-		printf("\n		ADJUST CMD AFTER FILE\n");
-		adjust_ast(data->ast);
-		print_ast(data->ast, 0); //visualiser l'arbre
-		printf("\n		ADJUST FILE ARG\n");
-		adjust_ast_file(data->ast);
-		print_ast(data->ast, 0); //visualiser l'arbre
-		//execute
-		executor(data, data->ast);
-		//free(data->prompt);
-		ft_free_data(data);
-		delete_tmp_files();
-	}
+	data = initialize_program(ac, av, env);
+	run_program(data);
 	free(data);
 	return (0);
 }
+
+// int	main(int ac, char **av, char **env)
+// {
+// 	t_data	*data;
+
+// 	if (ac != 1)
+// 	{
+// 		printf("Error: too many arguments\n");
+// 		return (1);
+// 	}
+// 	(void)av;
+// 	signals_handler();
+// 	data = initialize_data();
+// 	data->env = init_env(data, env);
+// 	while (1)
+// 	{
+// 		data->prompt = prompt(data);
+// 		data->tokens = tokenizer(data->prompt, data);
+// 		handle_here_doc(data, &data->tokens);
+// 		data->first_token = data->tokens; // pointeur sur le premier token
+// 		data->ast = parse_tokens(&data->tokens);
+// 		adjust_ast(data->ast);
+// 		adjust_ast_file(data->ast);
+// 		executor(data, data->ast);
+// 		//free(data->prompt);
+// 		ft_free_data(data);
+// 		delete_tmp_files();
+// 	}
+// 	free(data);
+// 	return (0);
+// }
 
 //MAIN DEBUG
 /* int	main(int ac, char **av, char **env)
