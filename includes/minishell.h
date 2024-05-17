@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 15:03:31 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/16 12:31:03 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/17 13:18:19 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,14 +32,14 @@ extern int	global_var;
 # define HERE_DOC_FILE "/tmp/.here_doc"
 
 // Colors
-# define RED "\033[0;31m"
-# define GREEN "\033[0;32m"
-# define YELLOW "\033[0;33m"
-# define BLUE "\033[0;34m"
-# define MAGENTA "\033[0;35m"
-# define CYAN "\033[0;36m"
-# define RESET "\033[0m"
-# define READLINE_MSG	"\033[1;32mminishell\033[32m$ \033[0m"
+# define RED "\1\033[0;31m\2"
+# define GREEN "\1\033[0;32m\2"
+# define YELLOW "\1\033[0;33m\2"
+# define BLUE "\1\033[0;34m\2"
+# define MAGENTA "\1\033[0;35m\2"
+# define CYAN "\1\033[0;36m\2"
+# define RESET "\1\033[0m\2"
+# define READLINE_MSG	"\1\033[1;32m\2minishell$ \1\033[0m\2"
 
 //signal
 # define CTRL_C_EXIT 130
@@ -232,6 +232,7 @@ void	delete_tmp_files(void);
 /*dollar handler*/
 void	redefine_dollar(t_token **tokens, t_env *env, t_data *data);
 t_token *get_last_token(t_token *tokens);
+int	has_dollar(char *line);
 
 /*cleanning*/
 int	clean_exit(t_data *data);

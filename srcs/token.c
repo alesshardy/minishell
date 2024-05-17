@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 16:15:43 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/16 12:23:32 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/16 18:29:23 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,6 +188,98 @@ void	remove_empty_quotes_from_tokens(t_token *tokens)
 } */
 //remove outer quotes from tokens
 
+// void	remove_dollar_unexpandable(t_token **tokens)
+// {
+// 	t_token	*current;
+// 	t_token	*prev;
+// 	t_token	*next;
+// 	int	i;
+
+// 	current = *tokens;
+// 	prev = NULL;
+// 	i = 0;
+// 	while (current)
+// 	{
+// 		if (has_dollar(current->value) && !has_only_dollar(current->value))
+// 		{
+// 			if (current->value[i] == '\"' || current->value[i] == '\'')
+// 				break;
+// 			i++;
+// 			while (current->value[i] != '$' && current->value[i] != '\0')
+// 				i++;
+// 			if (current->value[i] == '$')
+// 			{
+// 				while (current->value != ' ')
+// 				{
+
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+void remove_unquoted_dollar_tokens(t_token **tokens)
+{
+	t_token *prev;
+	t_token *current;
+	bool in_single_quotes;
+	bool in_double_quotes;
+	bool dollar_found;
+	int i;
+
+	prev = NULL;
+	current = *tokens;
+	while (current != NULL)
+	{
+		i = 0;
+		in_single_quotes = false;
+		in_double_quotes = false;
+		dollar_found = false;
+		while (current->value[i] != '\0')
+		{
+			if (current->value[i] == '\'')
+				in_single_quotes = !in_single_quotes;
+			else if (current->value[i] == '"')
+				in_double_quotes = !in_double_quotes;
+			else if (current->value[i] == '$' && !in_single_quotes)
+			{
+				// Check if the $ is alone or followed by another $ or it is alone in double quotes
+				if (current->value[i + 1] == ' ' || current->value[i + 1] == '\0' || current->value[i + 1] == '$' ||
+					(in_double_quotes && (current->value[i + 1] == '"' || current->value[i + 1] == ' ')))
+				{
+					i++;
+					continue;
+				}
+				else
+				{
+					dollar_found = true;
+					break;
+				}
+			}
+			i++;
+		}
+		if (dollar_found)
+		{
+			if (prev == NULL)
+				*tokens = current->next;
+			else
+				prev->next = current->next;
+			free(current->value);
+			free(current);
+			if (prev == NULL)
+				current = *tokens;
+			else
+				current = prev->next;
+		}
+		else
+		{
+			prev = current;
+			current = current->next;
+		}
+	}
+}
+
+
 
 //main tokenizer
 t_token	*tokenizer(char *input, t_data *data, bool expand)
@@ -223,6 +315,9 @@ t_token	*tokenizer(char *input, t_data *data, bool expand)
 		redefine_dollar(&tokens, data->env, data);
 	}
 	//printf("redefine dollar\n");
+	//display_tokens(tokens);
+	remove_unquoted_dollar_tokens(&tokens);
+	//printf("remove empty $\n");
 	//display_tokens(tokens);
 	redefine_word_token(tokens);
 	redefine_cmd_token(tokens);

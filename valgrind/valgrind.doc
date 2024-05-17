@@ -5,3 +5,15 @@
         ...
         fun:readline
 }
+{
+    bin
+    Memcheck:Leak
+    ...
+    obj:/usr/*
+}
+{
+    bin2
+    Memcheck:Leak
+    ...
+    obj:/usr/bin/*
+}

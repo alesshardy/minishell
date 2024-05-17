@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/16 14:29:59 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/17 18:27:16 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,6 +181,13 @@ void	exec_child_process(char **args, char *cmd, char **env_array)
 	close_all_fds();
 	if (stat(cmd, &st) == 0)
 	{
+		// if (ft_strncmp(cmd, "/", 1) != 0 || ft_strncmp(cmd, ".", 1) != 0)
+		// {
+		// 	ft_putstr_fd("minishell: ", 2);
+		// 	ft_putstr_fd(args[0], 2);
+		// 	ft_putstr_fd(": command not found\n", 2);
+		// 	exit(127);
+		// }
 		if (S_ISDIR(st.st_mode))
 		{
 			ft_putstr_fd("minishell: ", 2);
@@ -188,12 +195,12 @@ void	exec_child_process(char **args, char *cmd, char **env_array)
 			ft_putstr_fd(": Is a directory\n", 2);
 			exit(126);
 		}
-		else if ((st.st_mode & S_IXUSR) == 0)
+		else if ((st.st_mode & S_IXUSR) == 0) //
 		{
 			ft_putstr_fd("minishell: ", 2);
 			ft_putstr_fd(args[0], 2);
-			ft_putstr_fd(": Command not found\n", 2);
-			exit(127);
+			ft_putstr_fd(": Permission denied\n", 2);
+			exit(126);
 		}
 	}
 	if (execve(cmd, args, env_array) == -1)
@@ -203,7 +210,10 @@ void	exec_child_process(char **args, char *cmd, char **env_array)
 		ft_putstr_fd(": ", 2);
 		if (errno == ENOENT)
 		{
-			ft_putstr_fd("Command not found\n", 2);
+			if (ft_strncmp(cmd, "/", 1) == 0 || ft_strncmp(cmd, ".", 1) == 0)
+				ft_putstr_fd("No such file or directory\n", 2);
+			else
+				ft_putstr_fd("command not found\n", 2);
 			exit(127);
 		}
 		else if (errno == EACCES)
@@ -214,7 +224,6 @@ void	exec_child_process(char **args, char *cmd, char **env_array)
 		else
 		{
 			ft_putstr_fd(strerror(errno), 2);
-			ft_putstr_fd("\n", 2);
 			exit(1);
 		}
 	}
@@ -242,9 +251,15 @@ void	ft_exec(t_data *data, char **args)
 		free(args[0]); //ajout pour free args[0]
 		waitpid(pid, &status, 0);
 		if (WIFEXITED(status))
+		{
 			global_var = WEXITSTATUS(status);
+			//printf("global_varE = %d\n", global_var); //fdebug
+		}
 		else if (WIFSIGNALED(status))
+		{
 			global_var = 128 + WTERMSIG(status);
+			//printf("global_varS = %d\n", global_var); //fdebug
+		}
 	}
 	signal(SIGINT, ctrl_c_handler);  // Restore signal handlers
 	signal(SIGQUIT, SIG_IGN);  // Restore signal handlers
@@ -301,13 +316,14 @@ void	ft_exec(t_data *data, char **args)
 // 	signal(SIGINT, ctrl_c_handler);  // Restore signal handlers
 // 	signal(SIGQUIT, handle_sigquit);  // Restore signal handlers
 // }
+
 void	pipe_child_process(t_data *data, t_ast *ast, int fd[2], int end)
 {
 	dup2(fd[end], end);
 	close(fd[0]);
 	close(fd[1]);
 	executor(data, ast);
-	exit(0);
+	exit(global_var); // fdpppppppppp
 }
 
 void	ft_pipeline(t_data *data, t_ast *ast)
@@ -332,11 +348,53 @@ void	ft_pipeline(t_data *data, t_ast *ast)
 			close(fd[1]);
 			waitpid(pid, &status, 0);
 			global_var = status >> 8;
+			//printf("global_var1 = %d\n", global_var); //fdebug
 			waitpid(pid2, &status, 0);
 			global_var = status >> 8;
+			//printf("global_var2 = %d\n", global_var); //fdebug
 		}
 	}
 }
+
+/* void	ft_pipeline(t_data *data, t_ast *ast)
+{
+    int		fd[2];
+    pid_t	pid;
+    pid_t	pid2;
+    int		status;
+
+    pipe(fd);
+    pid = fork();
+    if (pid == 0)
+        pipe_child_process(data, ast->left, fd, 1);
+    else
+    {
+        pid2 = fork();
+        if (pid2 == 0)
+            pipe_child_process(data, ast->right, fd, 0);
+        else
+        {
+            close(fd[0]);
+            close(fd[1]);
+            waitpid(pid, &status, 0);
+            if (WIFEXITED(status))
+            {
+                global_var = WEXITSTATUS(status);
+                printf("global_var1 = %d\n", global_var); //fdebug
+            }
+            else if (WIFSIGNALED(status))
+                global_var = 128 + WTERMSIG(status);
+            waitpid(pid2, &status, 0);
+            if (WIFEXITED(status))
+            {
+                global_var = WEXITSTATUS(status);
+                printf("global_var2 = %d\n", global_var); //fdebug
+            }
+            else if (WIFSIGNALED(status))
+                global_var = 128 + WTERMSIG(status);
+        }
+    }
+} */
 
 // void	ft_pipeline(t_data *data, t_ast *ast)
 // {
@@ -378,38 +436,87 @@ void	ft_pipeline(t_data *data, t_ast *ast)
 // 	}
 // }
 
-/* void	ft_redir_out(t_data *data, t_ast *ast)
+void	ft_redir_out(t_data *data, t_ast *ast)
 {
 	int		fd;
-	//int		status;
-	int		saved_stdout;
+	pid_t	pid;
 
-	saved_stdout = dup(STDOUT_FILENO);  // Sauvegarder la sortie standard
-
-	//ast->right->args[0] = remove_quotes_file(ast->right->args[0]); // remove quotes from file name
 	if (ast->type == REDIR_OUT)
-		fd = open(ast->right->args[0], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		fd = open(ast->right->args[0], O_CREAT | O_TRUNC | O_WRONLY, 0644);
 	else
-		fd = open(ast->right->args[0], O_WRONLY | O_CREAT | O_APPEND, 0644);
+		fd = open(ast->right->args[0], O_CREAT | O_APPEND | O_WRONLY, 0644);
 	if (fd < 0)
 	{
-		ft_putstr_fd("minishellOUT: ", 2);
-		ft_putstr_fd(ast->args[0], 2);
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(ast->right->args[0], 2);
 		ft_putstr_fd(": ", 2);
 		ft_putstr_fd(strerror(errno), 2);
 		ft_putstr_fd("\n", 2);
 		global_var = 1;
-		close(saved_stdout);
+		//ft_putstr_fd("SIUUUUU\n", 2);
 		return;
 	}
-	dup2(fd, STDOUT_FILENO);
-	close(fd);
-	executor(data, ast->left);
-	dup2(saved_stdout, STDOUT_FILENO);  // Restaurer la sortie standard
-	close(saved_stdout);
-} */
 
-void	ft_redir_out(t_data *data, t_ast *ast)
+	pid = fork();
+	if (pid == 0)
+	{
+		// This is the child process. Redirect the standard output and execute the command.
+		dup2(fd, STDOUT_FILENO);
+		close(fd);
+		executor(data, ast->left);
+		//dprintf(2, "%d\n", global_var);
+		exit(global_var);
+	}
+	else if (pid > 0)
+	{
+		// This is the parent process. Wait for the child to finish.
+		int status;
+		waitpid(pid, &status, 0);
+		global_var = WEXITSTATUS(status);
+		close(fd);
+	}
+	else
+	{
+		// Fork failed.
+		perror("fork");
+		exit(EXIT_FAILURE);
+	}
+}
+
+// OG FONCTIONNEL MAIS PASSE PAS LE TESTEUR A CAUSE CONFLIT SORTIS STANDARD
+//  void	ft_redir_out(t_data *data, t_ast *ast)
+// {
+// 	int		fd;
+// 	//int		status;
+// 	int		saved_stdout;
+
+// 	saved_stdout = dup(STDOUT_FILENO);  // Sauvegarder la sortie standard
+
+// 	//ast->right->args[0] = remove_quotes_file(ast->right->args[0]); // remove quotes from file name
+// 	if (ast->type == REDIR_OUT)
+// 		fd = open(ast->right->args[0], O_CREAT | O_TRUNC | O_WRONLY, 0644);
+// 	else
+// 		fd = open(ast->right->args[0], O_CREAT | O_APPEND | O_WRONLY, 0644);
+// 	if (fd < 0)
+// 	{
+// 		ft_putstr_fd("minishell: ", 2);
+// 		ft_putstr_fd(ast->right->args[0], 2);
+// 		ft_putstr_fd(": ", 2);
+// 		ft_putstr_fd(strerror(errno), 2);
+// 		ft_putstr_fd("\n", 2);
+// 		global_var = 1;
+// 		ft_putstr_fd("SIUUUUU\n", 2);
+// 		close(saved_stdout);
+// 		return;
+// 	}
+// 	dup2(fd, STDOUT_FILENO);
+// 	close(fd);
+// 	executor(data, ast->left);
+// 	dup2(saved_stdout, STDOUT_FILENO);  // Restaurer la sortie standard
+// 	close(saved_stdout);
+// }
+
+/* void	ft_redir_out(t_data *data, t_ast *ast)
 {
 	int		fd;
 	int		saved_stdout;
@@ -443,9 +550,9 @@ void	ft_redir_out(t_data *data, t_ast *ast)
 		ft_putstr_fd(error_message, 2);
 		free(error_message);
 	}
-}
+} */
 
-/* void	ft_redir_in(t_data *data, t_ast *ast)
+void	ft_redir_in(t_data *data, t_ast *ast)
 {
 	int		fd;
 	//int		status;
@@ -458,7 +565,7 @@ void	ft_redir_out(t_data *data, t_ast *ast)
 	if (fd < 0)
 	{
 		ft_putstr_fd("minishell: ", 2);
-		ft_putstr_fd(ast->args[0], 2);
+		ft_putstr_fd(ast->right->args[0], 2);
 		ft_putstr_fd(": ", 2);
 		ft_putstr_fd(strerror(errno), 2);
 		ft_putstr_fd("\n", 2);
@@ -472,9 +579,9 @@ void	ft_redir_out(t_data *data, t_ast *ast)
 
 	dup2(saved_stdin, STDIN_FILENO);  // Restaurer l'entrée standard
 	close(saved_stdin);
-} */
+}
 
-void	ft_redir_in(t_data *data, t_ast *ast)
+/* void	ft_redir_in(t_data *data, t_ast *ast)
 {
 	int		fd;
 	int		saved_stdin;
@@ -505,7 +612,7 @@ void	ft_redir_in(t_data *data, t_ast *ast)
 		ft_putstr_fd(error_message, 2);
 		free(error_message);
 	}
-}
+} */
 
 // fonction qui gere les actions a effectuer en fonction du type de token
 
