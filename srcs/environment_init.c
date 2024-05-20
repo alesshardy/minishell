@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   environment_init.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kammi <kammi@student.42.fr>                +#+  +:+       +#+        */
+/*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/26 12:23:36 by kammi             #+#    #+#             */
-/*   Updated: 2024/05/06 16:59:33 by kammi            ###   ########.fr       */
+/*   Updated: 2024/05/20 18:19:46 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,10 +106,14 @@ t_env	*init_env(t_data *data, char **env)
 		{
 			new_node = new_env_node(ft_substr(env[i], 0, equal_pos - env[i]),
 										ft_strdup(equal_pos + 1), 1);
+			if (!new_node)
+				return (NULL);
 		}
 		else
 		{
 			new_node = new_env_node(ft_strdup(env[i]), NULL, 0);
+			if (!new_node)
+				return (NULL);
 		}
 		add_env_node(&(data->env), new_node);
 		i++;

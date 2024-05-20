@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 15:10:25 by kammi             #+#    #+#             */
-/*   Updated: 2024/05/17 13:46:36 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/20 18:20:34 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,22 @@
 t_data	*initialize_data()
 {
 	t_data *data = malloc(sizeof(t_data));
-	if (data != NULL)
+	if (data == NULL)
 	{
-		data->env = NULL;
-		data->env_array = NULL;
-		data->prompt = NULL;
-		data->tokens = NULL;
-		data->first_token = NULL;
-		data->token_count = 0;
-		data->ast = NULL;
-		data->first_redir_out = NULL;
-		data->token_count = 0;
-		data->here_doc_fd = 0;
-		data->exit_status = 0;
-
+		printf("Error: malloc failed\n");
+		exit(1);
 	}
+	data->env = NULL;
+	data->env_array = NULL;
+	data->prompt = NULL;
+	data->tokens = NULL;
+	data->first_token = NULL;
+	data->token_count = 0;
+	data->ast = NULL;
+	data->first_redir_out = NULL;
+	data->token_count = 0;
+	data->here_doc_fd = 0;
+	data->exit_status = 0;
 	return (data);
 }
 
@@ -46,7 +47,12 @@ t_data	*initialize_program(int ac, char **av, char **env)
 	signals_handler();
 	data = initialize_data();
 	data->env = init_env(data, env);
-	return data;
+	if (data->env == NULL)
+	{
+		printf("Error: malloc failed\n");
+		exit(1);
+	}
+	return (data);
 }
 
 void	run_program(t_data *data)

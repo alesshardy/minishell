@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   token_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kammi <kammi@student.42.fr>                +#+  +:+       +#+        */
+/*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 13:53:26 by kammi             #+#    #+#             */
-/*   Updated: 2024/05/08 16:56:42 by kammi            ###   ########.fr       */
+/*   Updated: 2024/05/20 18:28:08 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,12 +38,12 @@ t_token	*new_token(char *value, t_token_type type)
 		return (NULL);
 	// new_token->value = value;
 	new_token->value = ft_strdup(value); // ADDED
-	new_token->type = type;
 	if (!new_token->value)
 	{
 		free(new_token);
 		return (NULL);
 	}
+	new_token->type = type;
 	new_token->next = NULL;
 	new_token->prev = NULL;
 	return (new_token);
@@ -66,6 +66,7 @@ t_token *get_last_token(t_token *tokens)
 void	add_word_token(char **start, char **input, t_token **tokens)
 {
 	char	*word;
+	t_token	*new;
 
 	if (*input > *start)
 	{
@@ -73,11 +74,17 @@ void	add_word_token(char **start, char **input, t_token **tokens)
 		//printf("word: %s\n", word); // debug
 		if (word)
 		{
-			add_token(tokens, new_token(word, WORD));
+			new = new_token(word, WORD);
+			if (new)
+				add_token(tokens, new);
+			else
+				ft_putstr_fd("Error: malloc failed\n", 2);
 			free(word);
 		}
 		else
+		{
 			ft_putstr_fd("Error: malloc failed\n", 2);
+		}
 	}
 }
 

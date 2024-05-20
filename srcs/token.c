@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 16:15:43 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/16 18:29:23 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/20 18:30:31 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,28 +82,51 @@ void	redefine_cmd_token(t_token *tokens)
 //handle (|, <, << , >, >>)
 void	handle_redirection(char **input, t_token **tokens)
 {
+	t_token	*new;
+
 	if (**input == '<')
 	{
 		if (*(*input + 1) == '<')
 		{
-			add_token(tokens, new_token( "<<", REDIR_HEREDOC));//handle heredoc
+			new = new_token( "<<", REDIR_HEREDOC);
+			if (new == NULL)
+				return ;
+			add_token(tokens, new);//handle heredoc
 			(*input)++;
 		}
 		else
-			add_token(tokens, new_token( "<", REDIR_IN));//handle redirection in
+		{
+			new = new_token( "<", REDIR_IN);
+			if (new == NULL)
+				return ;
+			add_token(tokens, new);//handle redirection in
+		}
 	}
 	else if (**input == '>')
 	{
 		if (*(*input + 1) == '>')
 		{
-			add_token(tokens, new_token( ">>", REDIR_APPEND));//handle redirection append
+			new = new_token( ">>", REDIR_APPEND);
+			if (new == NULL)
+				return ;
+			add_token(tokens, new);//handle redirection append
 			(*input)++;
 		}
 		else
-			add_token(tokens, new_token( ">", REDIR_OUT));//handle redirection out
+		{
+			new = new_token( ">", REDIR_OUT);
+			if (new == NULL)
+				return ;
+			add_token(tokens, new);//handle redirection out
+		}
 	}
 	else if (**input == '|')
-		add_token(tokens, new_token( "|", PIPE));//handle pipe
+	{
+		new = new_token( "|", PIPE);
+		if (new == NULL)
+			return ;
+		add_token(tokens, new);//handle pipe
+	}
 	(*input)++;
 }
 

@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 14:36:51 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/15 17:13:00 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/20 16:49:27 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,6 +211,34 @@ char	*prompt(t_data *data)
 	add_history(line);
 	return (line);
 }
+
+/* char *prompt(t_data *data)
+{
+    char *line;
+    line = readline(READLINE_MSG);
+
+    if (line == NULL)
+    {
+        printf("exit\n");
+        clean_exit(data);
+    }
+    else if (line[0] == '\0')
+    {
+        free(line);
+        return (ft_strdup(""));
+    }
+    else if (!ft_strcmp(line, ":") || !ft_strcmp(line, "#") || !ft_strcmp(line, "!"))
+    {
+        if (!ft_strcmp(line, ":") || !ft_strcmp(line, "#"))
+            global_var = 0;
+        if (!ft_strcmp(line, "!"))
+            global_var = 1;
+        free(line);
+        return (ft_strdup(""));
+    }
+    add_history(line);
+    return (line);
+} */
 
 
 

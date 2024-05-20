@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kammi <kammi@student.42.fr>                +#+  +:+       +#+        */
+/*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 14:43:09 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/02 12:04:27 by kammi            ###   ########.fr       */
+/*   Updated: 2024/05/20 18:49:23 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@ t_ast	*parse_word(t_token **tokens)
 			|| (*tokens)->type == OUTFILE || (*tokens)->type == CMD || (*tokens)->type == ARG))
 	{
 		node = create_ast(*tokens);
+		if (node == NULL) // funcheck
+			return (NULL);
 		*tokens = (*tokens)->next;
 	}
 	return (node);
@@ -32,6 +34,8 @@ t_ast	*parse_command(t_token **tokens)
 	int		i;
 
 	node = parse_word(tokens);
+	if (node == NULL) // funcheck
+		return (NULL);
 	i = 1;
 	while (*tokens != NULL &&  ((*tokens)->type == WORD || (*tokens)->type == INFILE
 				|| (*tokens)->type == OUTFILE || (*tokens)->type == CMD || (*tokens)->type == ARG))
@@ -51,6 +55,8 @@ t_ast	*parse_redirection(t_token **tokens)
 	t_ast	*last_redir;
 
 	node = parse_command(tokens);
+	// if (node == NULL) // funcheck CELUI QUI FOU LA MERDE
+	// 	return (NULL);
 	last_redir = NULL;
 	while (*tokens != NULL && ((*tokens)->type == REDIR_IN
 			|| (*tokens)->type == REDIR_OUT || (*tokens)->type == REDIR_APPEND
@@ -110,6 +116,8 @@ t_ast	*parse_pipe(t_token **tokens)
 	while (*tokens != NULL && (*tokens)->type == PIPE)
 	{
 		pipe = create_ast(*tokens);
+		if (pipe == NULL) // funcheck
+			return (NULL);
 		pipe->left = node;
 		*tokens = (*tokens)->next;
 		pipe->right = parse_redirection(tokens);
