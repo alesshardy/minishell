@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/02 12:19:23 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/17 18:27:16 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/20 15:48:14 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,21 +181,31 @@ void	exec_child_process(char **args, char *cmd, char **env_array)
 	close_all_fds();
 	if (stat(cmd, &st) == 0)
 	{
-		// if (ft_strncmp(cmd, "/", 1) != 0 || ft_strncmp(cmd, ".", 1) != 0)
-		// {
-		// 	ft_putstr_fd("minishell: ", 2);
-		// 	ft_putstr_fd(args[0], 2);
-		// 	ft_putstr_fd(": command not found\n", 2);
-		// 	exit(127);
-		// }
 		if (S_ISDIR(st.st_mode))
+		{
+			if (ft_strncmp(cmd, "/", 1) != 0 && ft_strncmp(cmd, ".", 1) != 0)
+			{
+				ft_putstr_fd("minishell: ", 2);
+				ft_putstr_fd(args[0], 2);
+				ft_putstr_fd(": command not found\n", 2);
+				exit(127);
+			}
+			else
+			{
+				ft_putstr_fd("minishell: ", 2);
+				ft_putstr_fd(args[0], 2);
+				ft_putstr_fd(": Is a directory\n", 2);
+				exit(126);
+			}
+		}
+		else if ((st.st_mode & S_IXUSR) == 0 && ft_strchr(cmd, '/') == NULL)
 		{
 			ft_putstr_fd("minishell: ", 2);
 			ft_putstr_fd(args[0], 2);
-			ft_putstr_fd(": Is a directory\n", 2);
-			exit(126);
+			ft_putstr_fd(": command not found\n", 2);
+			exit(127);
 		}
-		else if ((st.st_mode & S_IXUSR) == 0) //
+		else if ((st.st_mode & S_IXUSR) == 0)
 		{
 			ft_putstr_fd("minishell: ", 2);
 			ft_putstr_fd(args[0], 2);
