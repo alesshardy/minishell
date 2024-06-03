@@ -3,14 +3,24 @@
 /*                                                        :::      ::::::::   */
 /*   env_utils.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kammi <kammi@student.42.fr>                +#+  +:+       +#+        */
+/*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/22 14:00:25 by kammi             #+#    #+#             */
-/*   Updated: 2024/04/29 16:14:20 by kammi            ###   ########.fr       */
+/*   Updated: 2024/05/22 13:54:28 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+
+char	*get_var_value(t_data *data, char *var)
+{
+	t_env	*env;
+
+	env = get_env_var(data, var);
+	if (env)
+		return (env->value);
+	return (NULL);
+}
 
 char	*ft_find_path(char **split, char *cmd)
 {
@@ -37,13 +47,11 @@ char	*ft_find_path(char **split, char *cmd)
 	return (NULL);
 }
 
-char	*get_cmd_path(char **envp, char *cmd)
+char	*get_cmd_path(char **envp, char *cmd, int i)
 {
-	int		i;
 	char	*path;
 	char	**split;
 
-	i = 0;
 	if (!cmd)
 		return (NULL);
 	if (ft_strchr(cmd, '/'))
@@ -54,6 +62,8 @@ char	*get_cmd_path(char **envp, char *cmd)
 		{
 			path = ft_strdup(envp[i] + 5);
 			split = ft_split(path, ':');
+			if (!split)
+				return (free(path), NULL);
 			free(path);
 			path = ft_find_path(split, cmd);
 			if (path)
@@ -62,24 +72,21 @@ char	*get_cmd_path(char **envp, char *cmd)
 		}
 		i++;
 	}
-	return (ft_strdup(cmd)); //modif pour retourne la commande mauvaise si rien de trouver
+	return (ft_strdup(cmd));
 }
 
-char	**get_env_array(t_env *env)
+char	**get_env_array(t_env *env, int i)
 {
 	char	**env_array;
-	int		i;
 	t_env	*head;
 	char	*tmp;
 
 	head = env;
-	i = 0;
 	while (env)
 	{
 		i++;
 		env = env->next;
 	}
-	//printf("i = %d\n", i);//fdebug
 	env_array = malloc(sizeof(char *) * (i + 1));
 	if (!env_array)
 		return (NULL);
@@ -101,13 +108,13 @@ void	free_array(char **array)
 {
 	int	i;
 
-	if (!array) //ajout
+	if (!array)
 		return ;
 	i = 0;
 	while (array[i])
 	{
-		free(array[i]); // delete array[i]
+		free(array[i]);
 		i++;
 	}
-	free(array); // delete array
+	free(array);
 }

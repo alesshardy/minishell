@@ -1,31 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strncpy.c                                       :+:      :+:    :+:   */
+/*   env.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/11 13:16:21 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/23 17:47:17 by apintus          ###   ########.fr       */
+/*   Created: 2024/05/21 18:09:35 by apintus           #+#    #+#             */
+/*   Updated: 2024/05/21 18:09:47 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "../../includes/minishell.h"
 
-char	*ft_strncpy(char *dst, const char *src, size_t len)
+/*********************************ENV************************************/
+
+int	ft_env(t_data *data)
 {
-	size_t	i;
+	t_env	*env;
 
-	i = 0;
-	while (src[i] && i < len)
+	env = data->env;
+	while (env)
 	{
-		dst[i] = src[i];
-		i++;
+		if (env->value)
+		{
+			ft_putstr_fd(env->name, 1);
+			ft_putstr_fd("=", 1);
+			ft_putstr_fd(env->value, 1);
+			ft_putstr_fd("\n", 1);
+		}
+		env = env->next;
 	}
-	while (i < len)
-	{
-		dst[i] = '\0';
-		i++;
-	}
-	return (dst);
+	return (0);
 }

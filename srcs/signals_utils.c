@@ -1,31 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strncpy.c                                       :+:      :+:    :+:   */
+/*   signals_utils.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
+/*   By: kammi <kammi@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/11 13:16:21 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/23 17:47:17 by apintus          ###   ########.fr       */
+/*   Created: 2024/05/24 15:32:15 by apintus           #+#    #+#             */
+/*   Updated: 2024/05/29 15:09:43 by kammi            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "../includes/minishell.h"
 
-char	*ft_strncpy(char *dst, const char *src, size_t len)
+void	child_signals_handler(void)
 {
-	size_t	i;
+	signal(SIGINT, child_ctrl_c);
+	signal(SIGQUIT, child_ctrl_c);
+}
 
-	i = 0;
-	while (src[i] && i < len)
-	{
-		dst[i] = src[i];
-		i++;
-	}
-	while (i < len)
-	{
-		dst[i] = '\0';
-		i++;
-	}
-	return (dst);
+void	signals_handler(void)
+{
+	signal(SIGINT, ctrl_c_handler);
+	signal(SIGQUIT, SIG_IGN);
 }

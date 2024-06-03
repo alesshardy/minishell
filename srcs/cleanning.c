@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cleanning.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kammi <kammi@student.42.fr>                +#+  +:+       +#+        */
+/*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/26 11:48:37 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/02 13:52:13 by kammi            ###   ########.fr       */
+/*   Updated: 2024/05/23 15:15:53 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,23 +54,19 @@ void	ft_free_data(t_data *data)
 {
 	if (data->first_token)
 	{
-		//printf("free_tokens\n");
 		free_tokens(data->first_token);
 		data->first_token = NULL;
 	}
 	if (data->prompt)
 	{
-		//printf("free_prompt\n");
 		free(data->prompt);
 		data->prompt = NULL;
 	}
 	if (data->ast)
 	{
-		//printf("free_ast\n");
 		free_ast(data->ast);
 		data->ast = NULL;
 	}
-	//free_array(data->env_array);
 }
 
 int	clean_exit(t_data *data)
@@ -80,5 +76,6 @@ int	clean_exit(t_data *data)
 	free_env(data->env);
 	free(data);
 	rl_clear_history();
-	exit(global_var);
+	ft_putstr_fd("exit\n", 1);
+	exit(g_var);
 }

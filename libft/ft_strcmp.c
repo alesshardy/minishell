@@ -6,7 +6,7 @@
 /*   By: apintus <apintus@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/10 13:32:53 by apintus           #+#    #+#             */
-/*   Updated: 2024/05/20 16:03:30 by apintus          ###   ########.fr       */
+/*   Updated: 2024/05/23 17:47:37 by apintus          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@
 // 	}
 // 	return ((unsigned char)*s1 - (unsigned char)*s2);
 // }
-
 
 //secure version
 int	ft_strcmp(const char *s1, const char *s2)
